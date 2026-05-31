@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --green: #0e4d3c;
+  --green-2: #15614c;
+  --green-3: #1c7a60;
+  --gold: #c9a227;
+  --gold-soft: #f3e7c4;
+  --cream: #fbf8f1;
+  --card: #ffffff;
+  --ink: #1e2a24;
+  --muted: #6e7a72;
+  --line: #e7e1d3;
+  --ok: #2e9e6b;
+  --warn: #e0a92e;
+  --danger: #d9534f;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Tajawal', system-ui, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  direction: rtl;
+  text-align: right;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+/* numbers stay LTR even inside RTL text */
+.num {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+@layer components {
+  .app-card {
+    @apply bg-card rounded-card shadow-card border-t-2 border-gold/70 p-4;
+  }
+  .btn-primary {
+    @apply bg-green text-white rounded-xl px-4 py-3 font-bold active:scale-[.98] transition disabled:opacity-50;
+  }
+  .btn-gold {
+    @apply bg-gold text-green rounded-xl px-4 py-3 font-bold active:scale-[.98] transition;
+  }
+  .btn-ghost {
+    @apply border-2 border-gold/70 text-green rounded-xl px-4 py-2.5 font-bold active:scale-[.98] transition;
+  }
+  .chip {
+    @apply rounded-full px-3 py-1.5 text-sm font-bold border-2 transition;
+  }
+  .field {
+    @apply w-full bg-cream/60 border-2 border-line rounded-xl px-3 py-2.5 text-ink font-bold
+      focus:border-gold focus:outline-none;
+  }
+}
+
+/* safe areas for iPhone notch / home indicator */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+}
+.nav-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* hide scrollbars on horizontal chip rows */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-pop {
+  animation: pop 0.16s ease-out;
+}
+
+@keyframes slideup {
+  0% {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.animate-slideup {
+  animation: slideup 0.22s ease-out;
+}
