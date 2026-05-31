@@ -11,6 +11,7 @@ import {
 import type { AppData } from '../types';
 import { loadData, saveData } from '../lib/storage';
 import { createSeedData } from '../data/seed';
+import { snapshotForCurrentMonth } from '../lib/calc';
 
 interface AppContextValue {
   data: AppData;
@@ -18,10 +19,20 @@ interface AppContextValue {
   update: (mutator: (draft: AppData) => void) => void;
   /** استبدال كامل البيانات (استيراد) */
   replace: (next: AppData) => void;
-  /** إعادة ضبط لشهر جديد: يصفّر المتغيّرة والمشتريات وحالة الوجبات */
+  /** إعادة ضبط لشهر جديد: يصوّر الشهر الحالي ثم يصفّر المتغيّرة والمشتريات والوجبات */
   resetForNewMonth: () => void;
+  /** حفظ لقطة للشهر الحالي في السجل (بدون تصفير) */
+  snapshotMonth: () => void;
   /** إعادة كل شيء للبيانات الأولية */
   resetAll: () => void;
+}
+
+function upsertSnapshot(draft: AppData) {
+  const snap = snapshotForCurrentMonth(draft);
+  const idx = draft.monthlyHistory.findIndex((m) => m.month === snap.month);
+  if (idx >= 0) draft.monthlyHistory[idx] = snap;
+  else draft.monthlyHistory.push(snap);
+  draft.monthlyHistory.sort((a, b) => a.month.localeCompare(b.month));
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -54,9 +65,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const replace = useCallback((next: AppData) => setData(next), []);
 
+  const snapshotMonth = useCallback(() => {
+    setData((prev) => {
+      const draft = deepClone(prev);
+      upsertSnapshot(draft);
+      return draft;
+    });
+  }, []);
+
   const resetForNewMonth = useCallback(() => {
     setData((prev) => {
       const draft = deepClone(prev);
+      upsertSnapshot(draft); // صوّر الشهر قبل التصفير
       draft.variableExpenses = [];
       draft.shopping.weeks = draft.shopping.weeks.map((w) => ({ ...w, checkedIds: [] }));
       draft.meals.weeks = draft.meals.weeks.map((w) => ({
@@ -73,8 +93,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const resetAll = useCallback(() => setData(createSeedData()), []);
 
   const value = useMemo<AppContextValue>(
-    () => ({ data, update, replace, resetForNewMonth, resetAll }),
-    [data, update, replace, resetForNewMonth, resetAll],
+    () => ({ data, update, replace, resetForNewMonth, snapshotMonth, resetAll }),
+    [data, update, replace, resetForNewMonth, snapshotMonth, resetAll],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

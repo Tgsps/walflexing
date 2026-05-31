@@ -101,6 +101,21 @@ export default function Settings() {
             placeholder="45.8"
           />
         </label>
+        <label className="block mt-3">
+          <span className="text-sm font-bold text-muted">ميزانية الملابس الشهرية (₺)</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            value={data.settings.monthlyClothingBudgetTRY || ''}
+            onChange={(e) =>
+              update((d) => {
+                d.settings.monthlyClothingBudgetTRY = Number(e.target.value) || 0;
+              })
+            }
+            className="field mt-1 num"
+            placeholder="0 = بدون حد"
+          />
+        </label>
         <div className="mt-3 bg-gold-soft rounded-xl px-3 py-2.5 flex items-center justify-between">
           <span className="font-bold text-green">الراتب بالليرة</span>
           <span className="font-black text-green num">{fmtTRY(salaryTRY)}</span>

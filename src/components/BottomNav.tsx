@@ -1,18 +1,19 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Wallet, UtensilsCrossed, Dumbbell, Settings } from 'lucide-react';
+import { Home, Wallet, UtensilsCrossed, Dumbbell, Shirt, Settings } from 'lucide-react';
 
 const items = [
   { to: '/', label: 'الرئيسية', Icon: Home, end: true },
   { to: '/expenses', label: 'المصاريف', Icon: Wallet, end: false },
   { to: '/food', label: 'الأكل', Icon: UtensilsCrossed, end: false },
   { to: '/workouts', label: 'التمارين', Icon: Dumbbell, end: false },
+  { to: '/clothes', label: 'الملابس', Icon: Shirt, end: false },
   { to: '/settings', label: 'الإعدادات', Icon: Settings, end: false },
 ];
 
 export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 bg-card border-t border-line shadow-nav nav-safe">
-      <ul className="max-w-[480px] mx-auto grid grid-cols-5">
+      <ul className="max-w-[480px] mx-auto grid grid-cols-6">
         {items.map(({ to, label, Icon, end }) => (
           <li key={to}>
             <NavLink

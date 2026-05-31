@@ -5,6 +5,7 @@ import Dashboard from './screens/Dashboard';
 import Expenses from './screens/Expenses';
 import Food from './screens/Food';
 import Workouts from './screens/Workouts';
+import Clothes from './screens/Clothes';
 import Settings from './screens/Settings';
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/food" element={<Food />} />
           <Route path="/workouts" element={<Workouts />} />
+          <Route path="/clothes" element={<Clothes />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Dashboard />} />
         </Routes>

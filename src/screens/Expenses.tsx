@@ -1,15 +1,21 @@
 import { useMemo, useState } from 'react';
-import { Plus, Trash2, Calendar } from 'lucide-react';
+import { Plus, Trash2, Calendar, Camera, ArrowDown, ArrowUp, Minus } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
 import Modal from '../components/Modal';
 import { VARIABLE_CATEGORIES, VARIABLE_CAT_MAP } from '../data/categories';
-import type { VariableCategory } from '../types';
+import type { MonthlySnapshot, VariableCategory } from '../types';
 import { fmtTRY, fmtUSD, toUSD, uid } from '../lib/format';
-import { filterByDate, totalFixed, type DateFilter } from '../lib/calc';
+import {
+  filterByDate,
+  totalFixed,
+  monthKey,
+  snapshotForCurrentMonth,
+  type DateFilter,
+} from '../lib/calc';
 
-type Tab = 'fixed' | 'variable';
+type Tab = 'fixed' | 'variable' | 'compare';
 
 export default function Expenses() {
   const [tab, setTab] = useState<Tab>('fixed');
@@ -17,16 +23,21 @@ export default function Expenses() {
     <div>
       <ScreenHeader emoji="💸" title="المصاريف" subtitle="الثابتة والمتوقّعة بالليرة والدولار" />
 
-      <div className="grid grid-cols-2 gap-2 mb-4 bg-card rounded-2xl p-1 border border-line">
+      <div className="grid grid-cols-3 gap-2 mb-4 bg-card rounded-2xl p-1 border border-line">
         <TabBtn active={tab === 'fixed'} onClick={() => setTab('fixed')}>
           🧾 ثابتة
         </TabBtn>
         <TabBtn active={tab === 'variable'} onClick={() => setTab('variable')}>
           💸 متوقّعة
         </TabBtn>
+        <TabBtn active={tab === 'compare'} onClick={() => setTab('compare')}>
+          📊 مقارنة
+        </TabBtn>
       </div>
 
-      {tab === 'fixed' ? <FixedTab /> : <VariableTab />}
+      {tab === 'fixed' && <FixedTab />}
+      {tab === 'variable' && <VariableTab />}
+      {tab === 'compare' && <CompareTab />}
     </div>
   );
 }
@@ -367,5 +378,129 @@ function VariableTab() {
         </ul>
       )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------- مقارنة الأشهر
+const COMPARE_ROWS: { key: keyof Pick<MonthlySnapshot, 'fixed' | 'variable' | 'shopping' | 'clothing'>; label: string; emoji: string }[] = [
+  { key: 'fixed', label: 'ثابتة', emoji: '🧾' },
+  { key: 'variable', label: 'متوقّعة', emoji: '💸' },
+  { key: 'shopping', label: 'مشتريات', emoji: '🛒' },
+  { key: 'clothing', label: 'ملابس', emoji: '👕' },
+];
+
+function CompareTab() {
+  const { data, snapshotMonth } = useApp();
+  const [msg, setMsg] = useState<string | null>(null);
+  const curKey = monthKey();
+  const current = useMemo(() => snapshotForCurrentMonth(data), [data]);
+
+  const prev = useMemo(() => {
+    const past = data.monthlyHistory.filter((m) => m.month < curKey);
+    return past.length ? past[past.length - 1] : null;
+  }, [data.monthlyHistory, curKey]);
+
+  const save = () => {
+    snapshotMonth();
+    setMsg('تم تصوير الشهر الحالي ✅');
+    setTimeout(() => setMsg(null), 2200);
+  };
+
+  return (
+    <div>
+      <Card className="mb-3">
+        <h2 className="font-black text-green mb-2">📸 تصوير الشهر</h2>
+        <p className="text-xs text-muted font-bold mb-3">
+          احفظ ملخّص هذا الشهر في السجل عشان تقارنه بالأشهر الجاية. (يتم الحفظ تلقائياً عند «تصفير لشهر جديد»).
+        </p>
+        <button onClick={save} className="btn-primary w-full flex items-center justify-center gap-2">
+          <Camera size={18} /> صوّر الشهر الحالي
+        </button>
+        {msg && <div className="text-center text-sm font-bold text-green mt-2 animate-pop">{msg}</div>}
+      </Card>
+
+      {!prev ? (
+        <Card className="text-center py-8">
+          <div className="text-3xl mb-2">📊</div>
+          <p className="text-sm text-muted font-bold">
+            لسا ما في شهر سابق محفوظ للمقارنة.
+            <br />
+            صوّر هذا الشهر، وبالشهر الجاي بتشوف المقارنة هون.
+          </p>
+        </Card>
+      ) : (
+        <Card>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-black text-green">مقارنة</h2>
+            <div className="text-xs font-bold text-muted num">
+              {prev.month} ← {curKey}
+            </div>
+          </div>
+          <ul className="space-y-2">
+            {COMPARE_ROWS.map((row) => {
+              const prevVal = prev[row.key];
+              const curVal = current[row.key];
+              const delta = curVal - prevVal;
+              return (
+                <li key={row.key} className="bg-cream/60 rounded-xl border border-line p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-ink">
+                      {row.emoji} {row.label}
+                    </span>
+                    <DeltaBadge delta={delta} />
+                  </div>
+                  <div className="flex items-center justify-between text-sm num">
+                    <span className="text-muted font-bold">سابق: {fmtTRY(prevVal)}</span>
+                    <span className="text-green font-black">حالي: {fmtTRY(curVal)}</span>
+                  </div>
+                </li>
+              );
+            })}
+            {/* الإجمالي */}
+            {(() => {
+              const prevTotal = prev.fixed + prev.variable + prev.shopping + prev.clothing;
+              const curTotal = current.fixed + current.variable + current.shopping + current.clothing;
+              const delta = curTotal - prevTotal;
+              return (
+                <li className="bg-green text-white rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-black">الإجمالي</span>
+                    <DeltaBadge delta={delta} inverted />
+                  </div>
+                  <div className="flex items-center justify-between text-sm num">
+                    <span className="text-white/75 font-bold">سابق: {fmtTRY(prevTotal)}</span>
+                    <span className="font-black text-gold">حالي: {fmtTRY(curTotal)}</span>
+                  </div>
+                </li>
+              );
+            })()}
+          </ul>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function DeltaBadge({ delta, inverted = false }: { delta: number; inverted?: boolean }) {
+  if (Math.abs(delta) < 1) {
+    return (
+      <span className="flex items-center gap-1 text-xs font-black text-muted num">
+        <Minus size={14} /> ثابت
+      </span>
+    );
+  }
+  const up = delta > 0; // ارتفع الصرف
+  // ارتفاع الصرف = أحمر (سيّئ)، انخفاض = أخضر (جيّد)
+  const good = !up;
+  const color = good ? '#2E9E6B' : '#D9534F';
+  const bg = inverted ? (good ? 'bg-white/15' : 'bg-white/15') : '';
+  return (
+    <span
+      className={`flex items-center gap-1 text-xs font-black num px-2 py-0.5 rounded-full ${bg}`}
+      style={{ color: inverted ? (good ? '#9be8c2' : '#ffc9c7') : color }}
+    >
+      {up ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+      {fmtTRY(Math.abs(delta))}
+    </span>
   );
 }

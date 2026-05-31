@@ -1,5 +1,15 @@
-import type { AppData, GroceryCategory, VariableExpense } from '../types';
+import type {
+  AppData,
+  FixedExpense,
+  GroceryCategory,
+  MonthlySnapshot,
+  VariableExpense,
+} from '../types';
 import { WEEK_DAYS } from '../data/seed';
+
+export function monthKey(ref = new Date()): string {
+  return `${ref.getFullYear()}-${String(ref.getMonth() + 1).padStart(2, '0')}`;
+}
 
 // ---- فلاتر التاريخ ----------------------------------------------------------
 export type DateFilter = 'today' | 'week' | 'month';
@@ -77,13 +87,22 @@ export function totalCheckedGroceries(data: AppData): number {
   return total;
 }
 
+/** مجموع ما صُرف على الملابس هذا الشهر (القطع المملوكة المشتراة هذا الشهر) */
+export function clothingThisMonth(data: AppData): number {
+  return data.wardrobe.owned
+    .filter((o) => o.purchaseDate && isSameMonth(o.purchaseDate))
+    .reduce((s, o) => s + (o.pricePaid || 0), 0);
+}
+
 export interface DashboardTotals {
   salaryUSD: number;
   rate: number;
   salaryTRY: number;
   fixed: number;
-  variable: number;
+  variable: number; // المتغيّرة الصافية
   groceries: number;
+  clothing: number;
+  variablePlusClothing: number; // ما يُعرض في بطاقة «متوقّعة»
   spent: number;
   remaining: number;
   spentPercent: number;
@@ -96,10 +115,82 @@ export function computeTotals(data: AppData): DashboardTotals {
   const fixed = totalFixed(data);
   const variable = totalVariableMonth(data);
   const groceries = totalCheckedGroceries(data);
-  const spent = fixed + variable + groceries;
+  const clothing = clothingThisMonth(data);
+  const variablePlusClothing = variable + clothing;
+  const spent = fixed + variablePlusClothing + groceries;
   const remaining = salaryTRY - spent;
   const spentPercent = salaryTRY > 0 ? (spent / salaryTRY) * 100 : 0;
-  return { salaryUSD, rate, salaryTRY, fixed, variable, groceries, spent, remaining, spentPercent };
+  return {
+    salaryUSD,
+    rate,
+    salaryTRY,
+    fixed,
+    variable,
+    groceries,
+    clothing,
+    variablePlusClothing,
+    spent,
+    remaining,
+    spentPercent,
+  };
+}
+
+// ---- تذكيرات الفواتير -------------------------------------------------------
+export interface BillReminder {
+  expense: FixedExpense;
+  daysUntil: number; // سالب = متأخّرة
+  paid: boolean;
+}
+
+/** الفواتير الثابتة غير المدفوعة هذا الشهر والمستحقّة خلال ≤ 3 أيام أو متأخّرة. */
+export function upcomingBills(data: AppData, ref = new Date()): BillReminder[] {
+  const key = monthKey(ref);
+  const today = new Date(ref);
+  today.setHours(0, 0, 0, 0);
+  const out: BillReminder[] = [];
+  for (const e of data.fixedExpenses) {
+    if (!e.dueDay) continue;
+    const paid = e.paidMonth === key;
+    if (paid) continue;
+    const due = new Date(today.getFullYear(), today.getMonth(), e.dueDay);
+    due.setHours(0, 0, 0, 0);
+    const daysUntil = Math.round((due.getTime() - today.getTime()) / 86400000);
+    if (daysUntil <= 3) out.push({ expense: e, daysUntil, paid });
+  }
+  return out.sort((a, b) => a.daysUntil - b.daysUntil);
+}
+
+// ---- حاسبة اليوم ------------------------------------------------------------
+export interface DailyAllowance {
+  perDay: number;
+  daysLeft: number;
+  level: ProgressLevel;
+}
+
+export function dailyAllowance(remaining: number, salaryTRY: number, ref = new Date()): DailyAllowance {
+  const daysInMonth = new Date(ref.getFullYear(), ref.getMonth() + 1, 0).getDate();
+  const daysLeft = Math.max(1, daysInMonth - ref.getDate() + 1);
+  const perDay = remaining / daysLeft;
+  let level: ProgressLevel = 'ok';
+  if (remaining <= 0) level = 'danger';
+  else {
+    const ideal = salaryTRY > 0 ? salaryTRY / daysInMonth : perDay;
+    const ratio = ideal > 0 ? perDay / ideal : 1;
+    level = ratio >= 0.7 ? 'ok' : ratio >= 0.4 ? 'warn' : 'danger';
+  }
+  return { perDay, daysLeft, level };
+}
+
+// ---- لقطة الشهر -------------------------------------------------------------
+export function snapshotForCurrentMonth(data: AppData, ref = new Date()): MonthlySnapshot {
+  return {
+    month: monthKey(ref),
+    fixed: totalFixed(data),
+    variable: totalVariableMonth(data),
+    shopping: totalCheckedGroceries(data),
+    clothing: clothingThisMonth(data),
+    salary: (data.settings.salaryUSD || 0) * (data.settings.exchangeRate || 0),
+  };
 }
 
 export type ProgressLevel = 'ok' | 'warn' | 'danger';

@@ -19,7 +19,14 @@ function ensureShape(stored: Partial<AppData> | null): AppData {
     workout: {
       schedule: stored.workout?.schedule ?? seed.workout.schedule,
       log: stored.workout?.log ?? seed.workout.log,
+      weightLog: stored.workout?.weightLog ?? seed.workout.weightLog,
     },
+    notes: stored.notes ?? seed.notes,
+    wardrobe: {
+      owned: stored.wardrobe?.owned ?? seed.wardrobe.owned,
+      wishlist: stored.wardrobe?.wishlist ?? seed.wardrobe.wishlist,
+    },
+    monthlyHistory: stored.monthlyHistory ?? seed.monthlyHistory,
   };
 }
 

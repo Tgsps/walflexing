@@ -4,7 +4,9 @@ import type {
   GroceryItem,
   MealDay,
   MealWeek,
+  OwnedItem,
   PriceItem,
+  WishlistItem,
   WorkoutDay,
 } from '../types';
 import { RECIPE_BY_NAME } from './recipes';
@@ -183,16 +185,53 @@ const WORKOUT_SCHEDULE: WorkoutDay[] = [
   { day: 'الجمعة', focus: 'راحة', rest: true },
 ];
 
+// ---- خزانة الملابس (بيانات أولية قابلة للتعديل) ----------------------------
+const WARDROBE_OWNED: OwnedItem[] = [
+  { id: 'w_blazer_black', name: 'بليزر أسود نظيف', category: 'طبقات', color: 'أسود', status: 'owned' },
+  { id: 'w_shirt_black', name: 'قميص أسود fitted كم طويل', category: 'قمصان', color: 'أسود', store: 'Tudors', status: 'owned' },
+  { id: 'w_shirt_white', name: 'قميص أبيض crisp كم طويل', category: 'قمصان', color: 'أبيض', store: 'Tudors', status: 'owned' },
+  { id: 'w_shirt_olive', name: 'قميص زيتي fitted', category: 'قمصان', color: 'زيتي', status: 'owned' },
+  { id: 'w_jeans_dark', name: 'جينز داكن slim-straight', category: 'بنطلونات', color: 'كحلي داكن', store: 'Mavi', status: 'owned' },
+  { id: 'w_sneaker_white', name: 'سنيكر أبيض مينيمَلِست', category: 'أحذية', color: 'أبيض', status: 'owned' },
+  { id: 'w_belt_black', name: 'حزام أسود إبزيم فضي', category: 'إكسسوار', color: 'أسود/فضي', status: 'owned' },
+  { id: 'w_watch_silver', name: 'ساعة سيلفر فضية', category: 'إكسسوار', color: 'فضي', status: 'owned' },
+  { id: 'w_glasses', name: 'نظارة أوبتيكال', category: 'إكسسوار', color: 'فضي', status: 'owned' },
+  { id: 'w_pocket_white', name: 'منديل جيب أبيض', category: 'إكسسوار', color: 'أبيض', status: 'owned' },
+];
+
+const WARDROBE_WISHLIST: WishlistItem[] = [
+  { id: 'wl_chelsea', name: '🥾 چلسي بوت أسود', priority: 'high', store: 'FLO / Koton', budgetMinTRY: 1500, budgetMaxTRY: 3000, bought: false },
+  { id: 'wl_chino_beige', name: '👖 چينو بيج slim fit', priority: 'high', store: 'GAP / Koton', budgetMinTRY: 800, budgetMaxTRY: 1500, bought: false },
+  { id: 'wl_blazer_navy', name: '🧥 بليزر كحلي أو رمادي', priority: 'high', store: 'Mudo / Koton', budgetMinTRY: 1500, budgetMaxTRY: 3000, bought: false },
+  { id: 'wl_shirt_white2', name: '👕 قميص أبيض إضافي', priority: 'medium', store: 'Tudors', budgetMinTRY: 500, budgetMaxTRY: 900, bought: false },
+  { id: 'wl_sweater', name: '🧶 كنزة فاين نِيت داكنة', priority: 'medium', store: 'GAP / Mudo', budgetMinTRY: 800, budgetMaxTRY: 1500, bought: false },
+  { id: 'wl_chino_grey', name: '👔 چينو رمادي فاتح', priority: 'low', store: 'GAP / Koton', budgetMinTRY: 800, budgetMaxTRY: 1500, bought: false },
+];
+
+// متاجر مرجعية في إسطنبول
+export const WARDROBE_STORES: { name: string; spec: string; stars: number }[] = [
+  { name: 'Tudors', spec: 'قمصان رجالية slim fit', stars: 5 },
+  { name: 'Mudo', spec: 'قطع راقية، بليزرات', stars: 4 },
+  { name: 'Mavi', spec: 'جينز داكن جودة عالية', stars: 4 },
+  { name: 'GAP Turkey', spec: 'چينو وكنزات', stars: 3 },
+  { name: 'Koton', spec: 'smart casual بسعر معقول', stars: 3 },
+  { name: 'FLO', spec: 'أحذية (چلسي بوت)', stars: 3 },
+  { name: 'DeFacto / LCW', spec: 'أساسيات رخيصة فقط', stars: 2 },
+];
+
 export function createSeedData(): AppData {
   return {
     version: DATA_VERSION,
-    settings: { salaryUSD: 1000, exchangeRate: 45.8 },
+    settings: { salaryUSD: 1000, exchangeRate: 45.8, monthlyClothingBudgetTRY: 0 },
     fixedExpenses: FIXED,
     variableExpenses: [],
     prices: PRICES,
     groceries: GROCERIES,
     shopping: { weeks: [1, 2, 3, 4].map((week) => ({ week, checkedIds: [] })) },
     meals: { weeks: buildMeals() },
-    workout: { schedule: WORKOUT_SCHEDULE, log: [] },
+    workout: { schedule: WORKOUT_SCHEDULE, log: [], weightLog: [] },
+    notes: ['اكتب ملاحظة سريعة هنا… 📝'],
+    wardrobe: { owned: WARDROBE_OWNED, wishlist: WARDROBE_WISHLIST },
+    monthlyHistory: [],
   };
 }

@@ -1,12 +1,76 @@
 import { useMemo, useState } from 'react';
-import { Check, Flame, Pencil, Moon, Dumbbell } from 'lucide-react';
+import {
+  Check,
+  Flame,
+  Pencil,
+  Moon,
+  Dumbbell,
+  Plus,
+  Trash2,
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from 'recharts';
 import { useApp } from '../state/AppContext';
 import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
 import { JS_DAY_TO_AR } from '../data/seed';
 import { currentWeekDates } from '../lib/calc';
+import { todayISODate } from '../lib/format';
+
+type Tab = 'schedule' | 'weight';
 
 export default function Workouts() {
+  const [tab, setTab] = useState<Tab>('schedule');
+  return (
+    <div>
+      <ScreenHeader emoji="🏋️" title="التمارين" subtitle="جدولك الأسبوعي وتتبّع وزنك" />
+
+      <div className="grid grid-cols-2 gap-2 mb-4 bg-card rounded-2xl p-1 border border-line">
+        <TabBtn active={tab === 'schedule'} onClick={() => setTab('schedule')}>
+          🏋️ الجدول
+        </TabBtn>
+        <TabBtn active={tab === 'weight'} onClick={() => setTab('weight')}>
+          ⚖️ الوزن
+        </TabBtn>
+      </div>
+
+      {tab === 'schedule' ? <ScheduleTab /> : <WeightTab />}
+    </div>
+  );
+}
+
+function TabBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`py-2.5 rounded-xl font-black text-sm transition ${
+        active ? 'bg-green text-white shadow-soft' : 'text-muted'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------- الجدول
+function ScheduleTab() {
   const { data, update } = useApp();
   const todayAr = JS_DAY_TO_AR[new Date().getDay()];
   const weekDates = useMemo(() => currentWeekDates(), []);
@@ -47,38 +111,30 @@ export default function Workouts() {
       }
     });
 
-  // مؤشر الالتزام الأسبوعي
   const trainingDays = data.workout.schedule.filter((s) => !s.rest);
   const doneThisWeek = trainingDays.filter((s) => isDone(s.day)).length;
   const totalTraining = trainingDays.length;
 
-  // عدّاد الأيام المتتالية (streak)
-  const streak = useMemo(() => computeStreak(data.workout.schedule, doneByDate), [
-    data.workout.schedule,
-    doneByDate,
-  ]);
+  const streak = useMemo(
+    () => computeStreak(data.workout.schedule, doneByDate),
+    [data.workout.schedule, doneByDate],
+  );
 
   const todaySchedule = data.workout.schedule.find((s) => s.day === todayAr);
 
   return (
     <div>
-      <ScreenHeader
-        emoji="🏋️"
-        title="التمارين"
-        subtitle="جدولك الأسبوعي والتزامك"
-        action={
-          <button
-            onClick={() => setEditing((v) => !v)}
-            className={`shrink-0 rounded-xl px-3 py-2 text-sm font-bold flex items-center gap-1 ${
-              editing ? 'bg-green text-white' : 'border-2 border-gold/70 text-green'
-            }`}
-          >
-            <Pencil size={15} /> {editing ? 'تم' : 'تعديل'}
-          </button>
-        }
-      />
+      <div className="flex justify-end -mt-1 mb-2">
+        <button
+          onClick={() => setEditing((v) => !v)}
+          className={`rounded-xl px-3 py-2 text-sm font-bold flex items-center gap-1 ${
+            editing ? 'bg-green text-white' : 'border-2 border-gold/70 text-green'
+          }`}
+        >
+          <Pencil size={15} /> {editing ? 'تم' : 'تعديل الجدول'}
+        </button>
+      </div>
 
-      {/* تمرين اليوم */}
       {todaySchedule && (
         <Card className="mb-3 bg-green text-white border-gold">
           <div className="flex items-center justify-between">
@@ -111,7 +167,6 @@ export default function Workouts() {
         </Card>
       )}
 
-      {/* مؤشرات الالتزام */}
       <div className="grid grid-cols-2 gap-2 mb-4">
         <Card className="text-center">
           <div className="text-sm font-bold text-muted mb-1">التزام الأسبوع</div>
@@ -129,7 +184,6 @@ export default function Workouts() {
         </Card>
       </div>
 
-      {/* الجدول الأسبوعي */}
       <h3 className="font-black text-green px-1 mb-2">الجدول الأسبوعي</h3>
       <ul className="space-y-2">
         {data.workout.schedule.map((s) => {
@@ -191,7 +245,7 @@ export default function Workouts() {
       </ul>
 
       <p className="text-xs text-muted font-bold text-center mt-3">
-        تقدر تعدّل أي يوم من زر «تعديل» فوق — حتى يوم السبت حدّده زي ما يناسبك.
+        تقدر تعدّل أي يوم من زر «تعديل الجدول» — حتى يوم السبت حدّده زي ما يناسبك.
       </p>
     </div>
   );
@@ -213,12 +267,174 @@ function computeStreak(
       if (doneByDate.get(iso) === true) {
         streak++;
       } else if (i !== 0) {
-        // يوم تمرين فات بدون إنجاز -> ينقطع
         break;
       }
-      // i===0 (اليوم) وغير منجز: لا نكسر، اليوم ما خلص بعد
     }
     cur.setDate(cur.getDate() - 1);
   }
   return streak;
+}
+
+// ---------------------------------------------------------------- الوزن
+function WeightTab() {
+  const { data, update } = useApp();
+  const [weight, setWeight] = useState('');
+  const [date, setDate] = useState(todayISODate());
+
+  const log = useMemo(
+    () => data.workout.weightLog.slice().sort((a, b) => a.date.localeCompare(b.date)),
+    [data.workout.weightLog],
+  );
+
+  const addEntry = () => {
+    const w = Number(weight);
+    if (!w || w <= 0) return;
+    update((d) => {
+      const existing = d.workout.weightLog.find((e) => e.date === date);
+      if (existing) existing.weightKg = w;
+      else d.workout.weightLog.push({ date, weightKg: w });
+    });
+    setWeight('');
+  };
+
+  const removeEntry = (d0: string) =>
+    update((d) => {
+      d.workout.weightLog = d.workout.weightLog.filter((e) => e.date !== d0);
+    });
+
+  const chartData = log.map((e) => {
+    const dt = new Date(e.date);
+    return { label: `${dt.getDate()}/${dt.getMonth() + 1}`, weightKg: e.weightKg };
+  });
+
+  const first = log[0]?.weightKg;
+  const current = log[log.length - 1]?.weightKg;
+  const diff = first != null && current != null ? current - first : 0;
+  const weights = log.map((e) => e.weightKg);
+  const yMin = weights.length ? Math.floor(Math.min(...weights) - 1) : 0;
+  const yMax = weights.length ? Math.ceil(Math.max(...weights) + 1) : 100;
+
+  return (
+    <div>
+      {/* إدخال */}
+      <Card className="mb-3">
+        <h2 className="font-black text-green mb-3">⚖️ سجّل وزنك</h2>
+        <div className="flex gap-2 mb-2">
+          <input
+            type="number"
+            inputMode="decimal"
+            step="0.1"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addEntry()}
+            placeholder="الوزن (كغ)"
+            className="field flex-1 num"
+          />
+          <button onClick={addEntry} className="btn-primary px-5 flex items-center gap-1">
+            <Plus size={18} /> أضف
+          </button>
+        </div>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="field num"
+        />
+      </Card>
+
+      {/* ملخّص */}
+      {log.length > 0 && (
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <Card className="text-center">
+            <div className="text-sm font-bold text-muted mb-1">الوزن الحالي</div>
+            <div className="text-2xl font-black text-green num">{current} كغ</div>
+          </Card>
+          <Card className="text-center">
+            <div className="text-sm font-bold text-muted mb-1">الفرق عن البداية</div>
+            <div
+              className={`text-2xl font-black num flex items-center justify-center gap-1 ${
+                diff < 0 ? 'text-ok' : diff > 0 ? 'text-danger' : 'text-muted'
+              }`}
+            >
+              {diff < 0 ? <TrendingDown size={20} /> : diff > 0 ? <TrendingUp size={20} /> : null}
+              {diff > 0 ? '+' : ''}
+              {diff.toFixed(1)} كغ
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* الرسم البياني */}
+      {log.length >= 2 ? (
+        <Card className="mb-3">
+          <h3 className="font-black text-green mb-2">اتجاه الوزن</h3>
+          <div className="h-[200px] -mr-3" dir="ltr">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E7E1D3" />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#6E7A72' }} />
+                <YAxis domain={[yMin, yMax]} tick={{ fontSize: 11, fill: '#6E7A72' }} width={32} />
+                <Tooltip
+                  contentStyle={{ borderRadius: 12, border: '1px solid #E7E1D3', fontWeight: 700 }}
+                  labelStyle={{ fontWeight: 800 }}
+                  formatter={(v: number) => [`${v} كغ`, 'الوزن']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="weightKg"
+                  stroke="#0E4D3C"
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: '#C9A227', stroke: '#0E4D3C', strokeWidth: 2 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      ) : (
+        <Card className="text-center py-6 mb-3">
+          <div className="text-3xl mb-2">📈</div>
+          <p className="text-sm text-muted font-bold">
+            سجّل وزنك مرتين على الأقل عشان يظهر الرسم البياني.
+          </p>
+        </Card>
+      )}
+
+      {/* السجل */}
+      {log.length > 0 && (
+        <>
+          <h3 className="font-black text-green px-1 mb-2">السجل</h3>
+          <ul className="space-y-2">
+            {log
+              .slice()
+              .reverse()
+              .map((e) => {
+                const dt = new Date(e.date);
+                return (
+                  <li
+                    key={e.date}
+                    className="bg-card rounded-2xl border border-line p-3 flex items-center gap-3"
+                  >
+                    <span className="text-xl">⚖️</span>
+                    <div className="flex-1">
+                      <div className="font-black text-green num">{e.weightKg} كغ</div>
+                      <div className="text-xs text-muted font-bold num">
+                        {dt.getDate()}/{dt.getMonth() + 1}/{dt.getFullYear()}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeEntry(e.date)}
+                      className="w-8 h-8 grid place-items-center rounded-lg text-danger active:scale-95"
+                      aria-label="حذف"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </li>
+                );
+              })}
+          </ul>
+        </>
+      )}
+    </div>
+  );
 }

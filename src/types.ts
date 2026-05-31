@@ -3,6 +3,7 @@
 export interface Settings {
   salaryUSD: number;
   exchangeRate: number; // ₺ per 1 $
+  monthlyClothingBudgetTRY: number; // ميزانية الملابس الشهرية (افتراضي 0)
 }
 
 export interface FixedExpense {
@@ -11,6 +12,7 @@ export interface FixedExpense {
   emoji: string;
   amountTRY: number;
   dueDay?: number; // optional reminder day of month
+  paidMonth?: string; // "2026-05" => مدفوعة لهذا الشهر
 }
 
 export type VariableCategory =
@@ -94,6 +96,52 @@ export interface Recipe {
   tip: string;
 }
 
+// ---- المرحلة الثانية -------------------------------------------------------
+
+export type WardrobeCategory = 'قمصان' | 'بنطلونات' | 'طبقات' | 'أحذية' | 'إكسسوار';
+export type WardrobeStatus = 'owned' | 'sold' | 'damaged';
+export type Priority = 'high' | 'medium' | 'low';
+
+export interface OwnedItem {
+  id: string;
+  name: string;
+  category: WardrobeCategory;
+  color: string;
+  store?: string;
+  pricePaid?: number;
+  purchaseDate?: string; // ISO — يُحتسب ضمن مصاريف الشهر
+  status: WardrobeStatus;
+}
+
+export interface WishlistItem {
+  id: string;
+  name: string;
+  priority: Priority;
+  store: string;
+  budgetMinTRY: number;
+  budgetMaxTRY: number;
+  bought: boolean;
+}
+
+export interface Wardrobe {
+  owned: OwnedItem[];
+  wishlist: WishlistItem[];
+}
+
+export interface WeightEntry {
+  date: string; // ISO date
+  weightKg: number;
+}
+
+export interface MonthlySnapshot {
+  month: string; // "2026-05"
+  fixed: number;
+  variable: number;
+  shopping: number;
+  clothing: number;
+  salary: number;
+}
+
 export interface AppData {
   version: number;
   settings: Settings;
@@ -103,5 +151,8 @@ export interface AppData {
   groceries: GroceryItem[];
   shopping: { weeks: ShoppingWeek[] };
   meals: { weeks: MealWeek[] };
-  workout: { schedule: WorkoutDay[]; log: WorkoutLogEntry[] };
+  workout: { schedule: WorkoutDay[]; log: WorkoutLogEntry[]; weightLog: WeightEntry[] };
+  notes: string[];
+  wardrobe: Wardrobe;
+  monthlyHistory: MonthlySnapshot[];
 }
