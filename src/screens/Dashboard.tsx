@@ -3,9 +3,13 @@ import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { AlertTriangle, TrendingUp, BellRing, Plus, X, StickyNote, CalendarClock } from 'lucide-react';
 import { useApp } from '../state/AppContext';
-import ScreenHeader from '../components/ScreenHeader';
 import Card, { StatCard } from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
+import IdentityCard from '../components/IdentityCard';
+import FxCard from '../components/FxCard';
+import WeatherCard from '../components/WeatherCard';
+import MetroCard from '../components/MetroCard';
+import WordCard from '../components/WordCard';
 import {
   computeTotals,
   progressLevel,
@@ -45,24 +49,14 @@ export default function Dashboard() {
 
   return (
     <div>
-      <ScreenHeader emoji="🏠" title="الرئيسية" subtitle="نظرة سريعة على وضعك المالي هالشهر" />
+      <IdentityCard />
 
       {bills.length > 0 && <BillReminders bills={bills} />}
 
-      {/* الراتب */}
-      <Card className="mb-3 bg-green text-white border-gold">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-white/75 text-sm font-bold mb-1">الراتب الشهري</div>
-            <div className="text-3xl font-black num">{fmtUSD(t.salaryUSD)}</div>
-            <div className="text-gold font-bold num">{fmtTRY(t.salaryTRY)}</div>
-          </div>
-          <div className="text-left">
-            <div className="text-white/70 text-xs font-bold">سعر الصرف</div>
-            <div className="text-lg font-black num">{rate} ₺/$</div>
-          </div>
-        </div>
-      </Card>
+      <FxCard />
+      <WeatherCard />
+      <MetroCard />
+      <WordCard />
 
       {/* الرصيد المتبقّي + شريط التقدّم */}
       <Card className="mb-3">

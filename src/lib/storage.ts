@@ -27,6 +27,7 @@ function ensureShape(stored: Partial<AppData> | null): AppData {
       wishlist: stored.wardrobe?.wishlist ?? seed.wardrobe.wishlist,
     },
     monthlyHistory: stored.monthlyHistory ?? seed.monthlyHistory,
+    medicines: stored.medicines ?? seed.medicines,
   };
 }
 

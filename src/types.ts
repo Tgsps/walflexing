@@ -1,9 +1,24 @@
 // ---- Data model -------------------------------------------------------------
 
+export type ThemeMode = 'light' | 'dark' | 'system';
+
 export interface Settings {
   salaryUSD: number;
   exchangeRate: number; // ₺ per 1 $
   monthlyClothingBudgetTRY: number; // ميزانية الملابس الشهرية (افتراضي 0)
+  // --- المرحلة الثالثة (كلها إضافية) ---
+  onboardingDone: boolean;
+  userName: string;
+  userAvatar?: string; // base64
+  pinHash?: string; // SHA-256
+  pinEnabled: boolean;
+  lastActiveAt?: string; // آخر نشاط (للقفل بعد 5 دقائق)
+  theme: ThemeMode;
+  metroStation?: string;
+  lastRate?: number; // آخر سعر صرف مجلوب
+  previousRate?: number;
+  lastRateFetchedAt?: string;
+  lastDaySummaryDismissed?: string; // yyyy-mm-dd
 }
 
 export interface FixedExpense {
@@ -142,6 +157,15 @@ export interface MonthlySnapshot {
   salary: number;
 }
 
+export interface Medicine {
+  id: string;
+  name: string;
+  emoji: string;
+  time: string; // "08:00"
+  enabled: boolean;
+  lastTakenDate?: string; // yyyy-mm-dd => أُخذت اليوم لو == تاريخ اليوم
+}
+
 export interface AppData {
   version: number;
   settings: Settings;
@@ -155,4 +179,5 @@ export interface AppData {
   notes: string[];
   wardrobe: Wardrobe;
   monthlyHistory: MonthlySnapshot[];
+  medicines: Medicine[];
 }

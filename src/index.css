@@ -2,20 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+/* الألوان كثلاثيات RGB (تدعم شفافية Tailwind) */
 :root {
-  --green: #0e4d3c;
-  --green-2: #15614c;
-  --green-3: #1c7a60;
-  --gold: #c9a227;
-  --gold-soft: #f3e7c4;
-  --cream: #fbf8f1;
-  --card: #ffffff;
-  --ink: #1e2a24;
-  --muted: #6e7a72;
-  --line: #e7e1d3;
-  --ok: #2e9e6b;
-  --warn: #e0a92e;
-  --danger: #d9534f;
+  --green: 14 77 60;
+  --green-2: 21 97 76;
+  --green-3: 28 122 96;
+  --gold: 201 162 39;
+  --gold-soft: 243 231 196;
+  --cream: 251 248 241;
+  --card: 255 255 255;
+  --ink: 30 42 36;
+  --muted: 110 122 114;
+  --line: 231 225 211;
+  --ok: 46 158 107;
+  --warn: 224 169 46;
+  --danger: 217 83 79;
+}
+
+/* الوضع الداكن — نفس الهوية بألوان معكوسة */
+.dark {
+  --green: 28 122 96;
+  --green-2: 34 150 118;
+  --green-3: 46 170 134;
+  --gold: 201 162 39;
+  --gold-soft: 45 58 40;
+  --cream: 10 31 24;
+  --card: 17 41 32;
+  --ink: 232 240 236;
+  --muted: 122 154 138;
+  --line: 30 61 47;
+  --ok: 58 190 130;
+  --warn: 224 169 46;
+  --danger: 233 110 106;
 }
 
 * {
@@ -31,12 +49,13 @@ body,
 body {
   margin: 0;
   font-family: 'Tajawal', system-ui, sans-serif;
-  background: var(--cream);
-  color: var(--ink);
+  background: rgb(var(--cream));
+  color: rgb(var(--ink));
   direction: rtl;
   text-align: right;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* numbers stay LTR even inside RTL text */

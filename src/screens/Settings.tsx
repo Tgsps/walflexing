@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Download,
   Upload,
@@ -8,13 +9,30 @@ import {
   Info,
   Smartphone,
   AlertTriangle,
+  Sun,
+  Moon,
+  Monitor,
+  Lock,
+  Fingerprint,
+  Pill,
+  Camera,
+  Moon as MoonIcon,
+  ChevronLeft,
 } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
+import Modal from '../components/Modal';
 import { fmtTRY, fmtUSD, toUSD, uid, todayISODate } from '../lib/format';
 import { isValidImport } from '../lib/storage';
-import type { AppData } from '../types';
+import { sha256 } from '../lib/crypto';
+import {
+  biometricAvailable,
+  hasBiometricCredential,
+  registerBiometric,
+  clearBiometric,
+} from '../lib/biometric';
+import type { AppData, ThemeMode } from '../types';
 
 export default function Settings() {
   const { data, update, replace, resetForNewMonth, resetAll } = useApp();
@@ -66,6 +84,10 @@ export default function Settings() {
           {msg}
         </div>
       )}
+
+      <ProfileCard />
+      <ThemeCard />
+      <SecurityCard />
 
       {/* الراتب وسعر الصرف */}
       <Card className="mb-3">
@@ -247,6 +269,15 @@ export default function Settings() {
       {/* تثبيت + تصفير */}
       <Card className="mb-3">
         <h2 className="font-black text-green mb-3">🔧 أدوات</h2>
+        <Link to="/medicines" className="btn-ghost w-full mb-2 flex items-center justify-center gap-2">
+          <Pill size={18} /> الأدوية والفيتامينات
+        </Link>
+        <button
+          onClick={() => window.dispatchEvent(new Event('show-day-summary'))}
+          className="btn-ghost w-full mb-2 flex items-center justify-center gap-2"
+        >
+          <MoonIcon size={18} /> ملخّص نهاية اليوم
+        </button>
         <button
           onClick={() => window.dispatchEvent(new Event('show-install-hint'))}
           className="btn-ghost w-full mb-2 flex items-center justify-center gap-2"
@@ -286,5 +317,221 @@ export default function Settings() {
         <span className="num">{fmtUSD(toUSD(salaryTRY, rate))}</span>
       </p>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------- الملف الشخصي
+function ProfileCard() {
+  const { data, update } = useApp();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const name = data.settings.userName;
+  const avatar = data.settings.userAvatar;
+
+  return (
+    <Card className="mb-3">
+      <h2 className="font-black text-green mb-3">🪪 ملفّي الشخصي</h2>
+      <div className="flex items-center gap-3">
+        <button onClick={() => fileRef.current?.click()} className="relative shrink-0">
+          <div className="w-16 h-16 rounded-full bg-green text-white grid place-items-center text-2xl font-black overflow-hidden border-2 border-gold">
+            {avatar ? (
+              <img src={avatar} alt="" className="w-full h-full object-cover" />
+            ) : name ? (
+              name.charAt(0)
+            ) : (
+              <Camera size={22} />
+            )}
+          </div>
+          <span className="absolute -bottom-1 -left-1 w-6 h-6 rounded-full bg-gold text-green grid place-items-center">
+            <Camera size={13} />
+          </span>
+        </button>
+        <input
+          value={name}
+          onChange={(e) =>
+            update((d) => {
+              d.settings.userName = e.target.value;
+            })
+          }
+          placeholder="اسمك"
+          className="field flex-1"
+        />
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            if (f) {
+              const { fileToAvatar } = await import('../lib/image');
+              const a = await fileToAvatar(f);
+              update((d) => {
+                d.settings.userAvatar = a;
+              });
+            }
+            e.target.value = '';
+          }}
+        />
+      </div>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------- الثيم
+function ThemeCard() {
+  const { data, update } = useApp();
+  const theme = data.settings.theme;
+  const opts: { key: ThemeMode; label: string; Icon: typeof Sun }[] = [
+    { key: 'light', label: 'فاتح', Icon: Sun },
+    { key: 'dark', label: 'داكن', Icon: Moon },
+    { key: 'system', label: 'تلقائي', Icon: Monitor },
+  ];
+  return (
+    <Card className="mb-3">
+      <h2 className="font-black text-green mb-3">🌓 المظهر</h2>
+      <div className="grid grid-cols-3 gap-2">
+        {opts.map(({ key, label, Icon }) => (
+          <button
+            key={key}
+            onClick={() =>
+              update((d) => {
+                d.settings.theme = key;
+              })
+            }
+            className={`flex flex-col items-center gap-1 py-3 rounded-xl font-bold border-2 transition ${
+              theme === key ? 'bg-green text-white border-green' : 'border-line text-muted'
+            }`}
+          >
+            <Icon size={20} />
+            <span className="text-sm">{label}</span>
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------- الأمان (PIN)
+function SecurityCard() {
+  const { data, update } = useApp();
+  const enabled = data.settings.pinEnabled && !!data.settings.pinHash;
+  const [setup, setSetup] = useState(false);
+  const [bioAvail, setBioAvail] = useState(false);
+  const [bioOn, setBioOn] = useState(hasBiometricCredential());
+
+  useEffect(() => {
+    biometricAvailable().then(setBioAvail);
+  }, []);
+
+  const disable = () => {
+    if (confirm('تعطيل قفل الرمز؟')) {
+      clearBiometric();
+      setBioOn(false);
+      update((d) => {
+        d.settings.pinEnabled = false;
+        d.settings.pinHash = undefined;
+      });
+    }
+  };
+
+  const toggleBio = async () => {
+    if (bioOn) {
+      clearBiometric();
+      setBioOn(false);
+    } else {
+      const ok = await registerBiometric(data.settings.userName || 'user');
+      setBioOn(ok);
+      if (!ok) alert('تعذّر تفعيل البصمة على هذا الجهاز.');
+    }
+  };
+
+  return (
+    <Card className="mb-3">
+      <h2 className="font-black text-green mb-3">🔐 الأمان</h2>
+      {enabled ? (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 bg-ok/10 border border-ok/30 rounded-xl px-3 py-2.5">
+            <Lock size={18} className="text-ok" />
+            <span className="font-bold text-ink flex-1">قفل الرمز مفعّل</span>
+          </div>
+          {bioAvail && (
+            <button
+              onClick={toggleBio}
+              className={`w-full flex items-center justify-between rounded-xl border-2 px-3 py-2.5 font-bold ${
+                bioOn ? 'bg-green text-white border-green' : 'border-line text-muted'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <Fingerprint size={18} /> فتح بالبصمة / الوجه
+              </span>
+              <span>{bioOn ? 'مفعّل' : 'معطّل'}</span>
+            </button>
+          )}
+          <button onClick={() => setSetup(true)} className="btn-ghost w-full">
+            تغيير الرمز
+          </button>
+          <button onClick={disable} className="w-full rounded-xl px-4 py-2.5 font-bold border-2 border-danger text-danger">
+            تعطيل القفل
+          </button>
+        </div>
+      ) : (
+        <button onClick={() => setSetup(true)} className="btn-primary w-full flex items-center justify-center gap-2">
+          <Lock size={18} /> فعّل قفل الرمز
+        </button>
+      )}
+      {setup && <PinSetupModal onClose={() => setSetup(false)} />}
+    </Card>
+  );
+}
+
+function PinSetupModal({ onClose }: { onClose: () => void }) {
+  const { update } = useApp();
+  const [pin, setPin] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [err, setErr] = useState('');
+
+  const save = async () => {
+    if (!/^\d{4}$/.test(pin)) return setErr('الرمز لازم 4 أرقام.');
+    if (pin !== confirm) return setErr('الرمزان غير متطابقين.');
+    const hash = await sha256(pin);
+    update((d) => {
+      d.settings.pinHash = hash;
+      d.settings.pinEnabled = true;
+    });
+    onClose();
+  };
+
+  return (
+    <Modal open onClose={onClose} title="ضبط الرمز السري">
+      <div className="space-y-3">
+        <label className="block">
+          <span className="text-sm font-bold text-muted">الرمز (4 أرقام)</span>
+          <input
+            type="password"
+            inputMode="numeric"
+            maxLength={4}
+            value={pin}
+            onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+            className="field mt-1 num text-center text-2xl tracking-[0.5em]"
+            autoFocus
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm font-bold text-muted">أعد الرمز</span>
+          <input
+            type="password"
+            inputMode="numeric"
+            maxLength={4}
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value.replace(/\D/g, ''))}
+            className="field mt-1 num text-center text-2xl tracking-[0.5em]"
+          />
+        </label>
+        {err && <p className="text-sm font-bold text-danger">{err}</p>}
+        <button onClick={save} className="btn-primary w-full flex items-center justify-center gap-2">
+          <ChevronLeft size={18} className="rotate-180" /> حفظ الرمز
+        </button>
+      </div>
+    </Modal>
   );
 }

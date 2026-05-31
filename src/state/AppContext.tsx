@@ -12,6 +12,7 @@ import type { AppData } from '../types';
 import { loadData, saveData } from '../lib/storage';
 import { createSeedData } from '../data/seed';
 import { snapshotForCurrentMonth } from '../lib/calc';
+import { applyTheme } from '../lib/theme';
 
 interface AppContextValue {
   data: AppData;
@@ -54,6 +55,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     saveData(data);
   }, [data]);
+
+  // تطبيق الثيم (فاتح/داكن/تلقائي) + متابعة تغيّر النظام
+  useEffect(() => {
+    applyTheme(data.settings.theme);
+    if (data.settings.theme !== 'system') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => applyTheme('system');
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [data.settings.theme]);
 
   const update = useCallback((mutator: (draft: AppData) => void) => {
     setData((prev) => {

@@ -222,7 +222,15 @@ export const WARDROBE_STORES: { name: string; spec: string; stars: number }[] = 
 export function createSeedData(): AppData {
   return {
     version: DATA_VERSION,
-    settings: { salaryUSD: 1000, exchangeRate: 45.8, monthlyClothingBudgetTRY: 0 },
+    settings: {
+      salaryUSD: 1000,
+      exchangeRate: 45.8,
+      monthlyClothingBudgetTRY: 0,
+      onboardingDone: false,
+      userName: '',
+      pinEnabled: false,
+      theme: 'system',
+    },
     fixedExpenses: FIXED,
     variableExpenses: [],
     prices: PRICES,
@@ -233,5 +241,9 @@ export function createSeedData(): AppData {
     notes: ['اكتب ملاحظة سريعة هنا… 📝'],
     wardrobe: { owned: WARDROBE_OWNED, wishlist: WARDROBE_WISHLIST },
     monthlyHistory: [],
+    medicines: [
+      { id: 'm_vitd', name: 'فيتامين D', emoji: '☀️', time: '09:00', enabled: true },
+      { id: 'm_omega', name: 'أوميغا 3', emoji: '🐟', time: '14:00', enabled: true },
+    ],
   };
 }

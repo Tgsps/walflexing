@@ -1,26 +1,22 @@
 /** @type {import('tailwindcss').Config} */
+const rgb = (v) => `rgb(var(${v}) / <alpha-value>)`;
+
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
-        green: {
-          DEFAULT: '#0E4D3C',
-          2: '#15614C',
-          3: '#1C7A60',
-        },
-        gold: {
-          DEFAULT: '#C9A227',
-          soft: '#F3E7C4',
-        },
-        cream: '#FBF8F1',
-        card: '#FFFFFF',
-        ink: '#1E2A24',
-        muted: '#6E7A72',
-        line: '#E7E1D3',
-        ok: '#2E9E6B',
-        warn: '#E0A92E',
-        danger: '#D9534F',
+        green: { DEFAULT: rgb('--green'), 2: rgb('--green-2'), 3: rgb('--green-3') },
+        gold: { DEFAULT: rgb('--gold'), soft: rgb('--gold-soft') },
+        cream: rgb('--cream'),
+        card: rgb('--card'),
+        ink: rgb('--ink'),
+        muted: rgb('--muted'),
+        line: rgb('--line'),
+        ok: rgb('--ok'),
+        warn: rgb('--warn'),
+        danger: rgb('--danger'),
       },
       fontFamily: {
         sans: ['Tajawal', 'system-ui', 'sans-serif'],
