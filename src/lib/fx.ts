@@ -25,9 +25,19 @@ export async function getRate(force = false): Promise<FxData | null> {
     const res = await fetch('https://api.frankfurter.dev/v2/rates?base=USD&quotes=TRY');
     if (!res.ok) return cached;
     const j = await res.json();
-    const rate = Number(j?.rates?.TRY);
+    // v2 يرجع مصفوفة: [{date, base, quote, rate}]
+    // والشكل القديم كائن: {date, rates:{TRY}}
+    let rate = 0;
+    let date = '';
+    if (Array.isArray(j) && j[0]) {
+      rate = Number(j[0].rate);
+      date = j[0].date ?? '';
+    } else if (j?.rates?.TRY != null) {
+      rate = Number(j.rates.TRY);
+      date = j.date ?? '';
+    }
     if (!rate) return cached;
-    const data: FxData = { rate, date: j.date ?? '', fetchedAt: new Date().toISOString() };
+    const data: FxData = { rate, date, fetchedAt: new Date().toISOString() };
     localStorage.setItem(KEY, JSON.stringify(data));
     return data;
   } catch {
