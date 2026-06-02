@@ -1,11 +1,13 @@
 // ---- Data model -------------------------------------------------------------
 
 export type ThemeMode = 'light' | 'dark' | 'system';
+export type Language = 'en' | 'ar' | 'tr';
 
 export interface Settings {
   salaryUSD: number;
   exchangeRate: number; // ₺ per 1 $
   monthlyClothingBudgetTRY: number; // ميزانية الملابس الشهرية (افتراضي 0)
+  language: Language; // واجهة التطبيق (افتراضي en)
   // --- المرحلة الثالثة (كلها إضافية) ---
   onboardingDone: boolean;
   userName: string;

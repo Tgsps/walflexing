@@ -19,7 +19,9 @@ import {
   Moon as MoonIcon,
   ChevronLeft,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../state/AppContext';
+import { LANGS, LANG_META } from '../i18n';
 import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
 import Modal from '../components/Modal';
@@ -86,6 +88,7 @@ export default function Settings() {
       )}
 
       <ProfileCard />
+      <LanguageCard />
       <ThemeCard />
       <SecurityCard />
 
@@ -372,6 +375,38 @@ function ProfileCard() {
             e.target.value = '';
           }}
         />
+      </div>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------- اللغة
+function LanguageCard() {
+  const { t } = useTranslation();
+  const { data, update } = useApp();
+  const current = data.settings.language;
+  return (
+    <Card className="mb-3">
+      <h2 className="font-black text-green mb-3">🌐 {t('settings.language')}</h2>
+      <div className="grid grid-cols-3 gap-2">
+        {LANGS.map((l) => (
+          <button
+            key={l}
+            onClick={() =>
+              update((d) => {
+                d.settings.language = l;
+              })
+            }
+            className={`flex flex-col items-center gap-1 py-3 rounded-xl font-bold border-2 transition ${
+              current === l ? 'bg-green text-white border-green' : 'border-line text-muted'
+            }`}
+          >
+            <span style={{ fontSize: 22 }}>{LANG_META[l].flag}</span>
+            <span className="text-sm" dir={l === 'ar' ? 'rtl' : 'ltr'}>
+              {LANG_META[l].native}
+            </span>
+          </button>
+        ))}
       </div>
     </Card>
   );

@@ -13,6 +13,8 @@ import { loadData, saveData } from '../lib/storage';
 import { createSeedData } from '../data/seed';
 import { snapshotForCurrentMonth } from '../lib/calc';
 import { applyTheme } from '../lib/theme';
+import { applyLangDir } from '../lib/langdir';
+import i18n from '../i18n';
 
 interface AppContextValue {
   data: AppData;
@@ -55,6 +57,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     saveData(data);
   }, [data]);
+
+  // تطبيق اللغة + الاتجاه (RTL/LTR) فوراً عند التغيير
+  useEffect(() => {
+    const lang = data.settings.language;
+    if (i18n.language !== lang) i18n.changeLanguage(lang);
+    applyLangDir(lang);
+  }, [data.settings.language]);
 
   // تطبيق الثيم (فاتح/داكن/تلقائي) + متابعة تغيّر النظام
   useEffect(() => {

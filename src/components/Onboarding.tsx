@@ -3,10 +3,11 @@ import { ChevronLeft, ChevronRight, Camera, Check } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import { fmtTRY, uid } from '../lib/format';
 import { fileToAvatar } from '../lib/image';
+import LanguagePicker from './LanguagePicker';
 
 export default function Onboarding() {
   const { data, update } = useApp();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0); // 0 = اختيار اللغة
 
   const [name, setName] = useState(data.settings.userName || '');
   const [avatar, setAvatar] = useState<string | undefined>(data.settings.userAvatar);
@@ -44,6 +45,8 @@ export default function Onboarding() {
 
   const next = () => setStep((s) => Math.min(4, s + 1));
   const back = () => setStep((s) => Math.max(1, s - 1));
+
+  if (step === 0) return <LanguagePicker onConfirm={() => setStep(1)} />;
 
   return (
     <div className="fixed inset-0 z-[70] bg-cream overflow-y-auto">

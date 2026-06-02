@@ -226,6 +226,7 @@ export function createSeedData(): AppData {
       salaryUSD: 1000,
       exchangeRate: 45.8,
       monthlyClothingBudgetTRY: 0,
+      language: 'en',
       onboardingDone: false,
       userName: '',
       pinEnabled: false,
