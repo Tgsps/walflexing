@@ -1,19 +1,16 @@
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../state/AppContext';
 import { computeTotals } from '../lib/calc';
-import { fmtTRY, fmtUSD } from '../lib/format';
+import { fmtTRY, fmtUSD, monthName } from '../lib/format';
 import ProgressBar from './ProgressBar';
 
-const AR_MONTHS = [
-  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-];
-
 export default function IdentityCard() {
+  const { t, i18n } = useTranslation();
   const { data } = useApp();
-  const t = computeTotals(data);
-  const name = data.settings.userName || 'صديقي';
+  const total = computeTotals(data);
+  const name = data.settings.userName || t('onboarding.defaultName');
   const avatar = data.settings.userAvatar;
-  const month = AR_MONTHS[new Date().getMonth()];
+  const month = monthName(i18n.language);
 
   return (
     <div
@@ -25,7 +22,6 @@ export default function IdentityCard() {
         boxShadow: '0 8px 28px rgba(6,45,35,.28)',
       }}
     >
-      {/* grain */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -34,9 +30,8 @@ export default function IdentityCard() {
           backgroundSize: '4px 4px',
         }}
       />
-      {/* geometric gold lines, top-start corner */}
       <svg
-        className="absolute -top-2.5 -left-2.5"
+        className="absolute -top-2.5 ltr:-left-2.5 rtl:-right-2.5"
         style={{ opacity: 0.5 }}
         width="120"
         height="90"
@@ -66,27 +61,24 @@ export default function IdentityCard() {
             {avatar ? <img src={avatar} alt="" className="w-full h-full object-cover" /> : name.charAt(0)}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-white/70 text-[13px] font-bold">مرحباً،</div>
+            <div className="text-white/70 text-[13px] font-bold">{t('dash.greeting')}</div>
             <div className="text-white text-xl font-black truncate">{name} 👋</div>
           </div>
         </div>
 
         <div className="flex items-end justify-between mb-2.5">
-          <span className="text-white/80 text-[13px] font-bold">راتبي هذا الشهر</span>
-          <span
-            className="num font-black whitespace-nowrap"
-            style={{ fontSize: 30, color: 'rgb(var(--gold))' }}
-          >
-            {fmtTRY(t.salaryTRY)}
+          <span className="text-white/80 text-[13px] font-bold">{t('dash.salaryThisMonth')}</span>
+          <span className="num font-black whitespace-nowrap" style={{ fontSize: 30, color: 'rgb(var(--gold))' }}>
+            {fmtTRY(total.salaryTRY)}
           </span>
         </div>
 
-        <ProgressBar percent={t.spentPercent} height={6} onGreen />
+        <ProgressBar percent={total.spentPercent} height={6} onGreen />
 
         <div className="flex justify-between mt-2.5">
           {[
-            ['💵', fmtUSD(t.salaryUSD)],
-            ['📈', `صرفت ${Math.round(t.spentPercent)}%`],
+            ['💵', fmtUSD(total.salaryUSD)],
+            ['📈', t('dash.spentPct', { pct: Math.round(total.spentPercent) })],
             ['🗓️', month],
           ].map(([e, label], i) => (
             <span

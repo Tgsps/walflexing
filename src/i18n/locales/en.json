@@ -51,7 +51,8 @@
     "gymName": "Gym name",
     "gymFee": "Monthly fee (₺)",
     "gymNote": "It'll be added to your fixed expenses automatically.",
-    "gymDefault": "Gym membership"
+    "gymDefault": "Gym membership",
+    "defaultName": "friend"
   },
   "dash": {
     "greeting": "Hi,",
@@ -477,6 +478,10 @@
     "b_yogurt_apple": "Yogurt + apple",
     "b_boiled_eggs_cucumber": "Boiled eggs + cucumber",
     "lunch_default": "Yesterday's dinner leftovers · or a light salad + protein"
+  },
+  "medNames": {
+    "m_vitd": "Vitamin D",
+    "m_omega": "Omega 3"
   },
   "groceryNames": {
     "g_chicken": "Frozen chicken breast",

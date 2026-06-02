@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useApp } from '../state/AppContext';
 import { notificationPermission, showNotification } from '../lib/notifications';
 import { todayISODate } from '../lib/format';
+import i18n from '../i18n';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -21,7 +22,7 @@ export default function MedicineScheduler() {
         const fkey = `medfire_${m.id}_${today}`;
         if (localStorage.getItem(fkey)) continue;
         localStorage.setItem(fkey, '1');
-        showNotification('💊 تذكير دواء', `وقت ${m.name} (${m.time})`);
+        showNotification(i18n.t('medicines.notifTitle'), i18n.t('medicines.notifBody', { name: m.name, time: m.time }));
       }
     };
     tick();

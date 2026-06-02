@@ -51,7 +51,8 @@
     "gymName": "اسم الجيم",
     "gymFee": "الاشتراك الشهري (₺)",
     "gymNote": "بيضاف تلقائياً لمصاريفك الثابتة.",
-    "gymDefault": "اشتراك الجيم"
+    "gymDefault": "اشتراك الجيم",
+    "defaultName": "صديقي"
   },
   "dash": {
     "greeting": "مرحباً،",
@@ -477,6 +478,10 @@
     "b_yogurt_apple": "لبن + تفاح",
     "b_boiled_eggs_cucumber": "بيض مسلوق + خيار",
     "lunch_default": "بقايا عشاء الأمس · أو سلطة + بروتين خفيف"
+  },
+  "medNames": {
+    "m_vitd": "فيتامين D",
+    "m_omega": "أوميغا 3"
   },
   "groceryNames": {
     "g_chicken": "صدور دجاج مجمدة",

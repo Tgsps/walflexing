@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Delete, Fingerprint, Lock } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import { sha256 } from '../lib/crypto';
 import { biometricAvailable, hasBiometricCredential, verifyBiometric, clearBiometric } from '../lib/biometric';
 
 export default function PinLock({ onUnlock }: { onUnlock: () => void }) {
+  const { t } = useTranslation();
   const { data, update } = useApp();
   const [entry, setEntry] = useState('');
   const [error, setError] = useState(false);
@@ -40,7 +42,7 @@ export default function PinLock({ onUnlock }: { onUnlock: () => void }) {
   };
 
   const forgot = () => {
-    if (confirm('نسيت الرمز؟ بينحذف القفل فقط — بياناتك تبقى كما هي.')) {
+    if (confirm(t('pin.forgotConfirm'))) {
       clearBiometric();
       update((d) => {
         d.settings.pinEnabled = false;
@@ -59,8 +61,8 @@ export default function PinLock({ onUnlock }: { onUnlock: () => void }) {
       <div className="w-16 h-16 rounded-2xl bg-green text-white grid place-items-center mb-4 glow-green">
         <Lock size={30} />
       </div>
-      <h1 className="text-2xl font-black text-green mb-1">التطبيق مقفل</h1>
-      <p className="text-muted font-bold mb-6">أدخل الرمز السري</p>
+      <h1 className="text-2xl font-black text-green mb-1">{t('pin.locked')}</h1>
+      <p className="text-muted font-bold mb-6">{t('pin.enter')}</p>
 
       {/* النقاط */}
       <div className={`flex gap-4 mb-8 ${error ? 'animate-pop' : ''}`}>
@@ -90,7 +92,7 @@ export default function PinLock({ onUnlock }: { onUnlock: () => void }) {
             <button
               onClick={tryBio}
               className="w-16 h-16 rounded-full grid place-items-center text-green active:scale-95"
-              aria-label="بصمة"
+              aria-label={t('settings.biometric')}
             >
               <Fingerprint size={28} />
             </button>
@@ -102,14 +104,14 @@ export default function PinLock({ onUnlock }: { onUnlock: () => void }) {
         <button
           onClick={() => setEntry((e) => e.slice(0, -1))}
           className="w-16 h-16 rounded-full grid place-items-center text-muted active:scale-95"
-          aria-label="حذف"
+          aria-label={t('common.delete')}
         >
           <Delete size={26} />
         </button>
       </div>
 
       <button onClick={forgot} className="text-sm font-bold text-muted underline underline-offset-4">
-        نسيت الرمز؟
+        {t('pin.forgot')}
       </button>
     </div>
   );

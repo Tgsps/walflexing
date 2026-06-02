@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../state/AppContext';
 import { getRate, type FxData } from '../lib/fx';
 import Card from './Card';
 
 export default function FxCard() {
+  const { t } = useTranslation();
   const { data, update } = useApp();
   const [fx, setFx] = useState<FxData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,14 +33,14 @@ export default function FxCard() {
   if (loading) {
     return (
       <Card className="mb-3">
-        <div className="text-sm font-bold text-muted">💱 جاري جلب سعر الصرف…</div>
+        <div className="text-sm font-bold text-muted">💱 {t('fx.loading')}</div>
       </Card>
     );
   }
   if (!fx) {
     return (
       <Card className="mb-3">
-        <div className="text-sm font-bold text-muted">💱 تعذّر جلب سعر الصرف — تأكد من الإنترنت.</div>
+        <div className="text-sm font-bold text-muted">💱 {t('fx.error')}</div>
       </Card>
     );
   }
@@ -51,7 +53,9 @@ export default function FxCard() {
   const when = new Date(fx.fetchedAt);
   const isToday = when.toDateString() === new Date().toDateString();
   const whenLabel = isToday
-    ? `اليوم ${String(when.getHours()).padStart(2, '0')}:${String(when.getMinutes()).padStart(2, '0')}`
+    ? t('fx.todayAt', {
+        time: `${String(when.getHours()).padStart(2, '0')}:${String(when.getMinutes()).padStart(2, '0')}`,
+      })
     : `${when.getDate()}/${when.getMonth() + 1}`;
 
   const useThisRate = () =>
@@ -65,14 +69,14 @@ export default function FxCard() {
     <Card className="mb-3 relative">
       <div className="flex items-center justify-between mb-2">
         <span className="font-black text-green" style={{ fontSize: 16 }}>
-          💱 سعر الصرف اليوم
+          💱 {t('fx.title')}
         </span>
         <button
           onClick={useThisRate}
           className="chip"
           style={{ padding: '5px 12px', fontSize: 12, borderColor: 'rgb(var(--gold))', color: 'rgb(var(--green))' }}
         >
-          ↻ استخدمه
+          {t('fx.useIt')}
         </button>
       </div>
       <div className="flex items-end gap-2.5">
@@ -87,16 +91,16 @@ export default function FxCard() {
             {rose ? '▲' : '▼'} {diff.toFixed(2)}
           </span>
         )}
-        <div className="flex items-end gap-[3px] mr-auto" style={{ height: 26 }} aria-hidden>
+        <div className="flex items-end gap-[3px] ltr:ml-auto rtl:mr-auto" style={{ height: 26 }} aria-hidden>
           {bars.map((h, i) => (
             <span key={i} style={{ width: 4, height: h * 2, borderRadius: 9999, background: 'rgb(var(--gold) / 0.8)' }} />
           ))}
         </div>
       </div>
       <div className="num font-bold text-muted mt-1.5" style={{ fontSize: 11 }}>
-        {stale ? '⚠️ أوفلاين — آخر قيمة محفوظة · ' : ''}
+        {stale ? t('fx.offline') : ''}
         {whenLabel}
-        {prev != null && diff > 0 && (rose ? ' · الدولار ارتفع' : ' · الدولار نزل')}
+        {prev != null && diff > 0 && (rose ? t('fx.up') : t('fx.down'))}
       </div>
     </Card>
   );

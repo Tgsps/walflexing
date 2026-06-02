@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Share, Plus, X, Smartphone } from 'lucide-react';
 
 const DISMISS_KEY = 'install_hint_dismissed_v1';
@@ -18,6 +19,7 @@ function isIOS(): boolean {
 
 /** افتح التلميح يدوياً من أي مكان: window.dispatchEvent(new Event('show-install-hint')) */
 export default function InstallHint() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -52,13 +54,13 @@ export default function InstallHint() {
             📲
           </div>
           <div className="flex-1">
-            <h2 className="font-black text-lg">ثبّت التطبيق على الآيفون</h2>
-            <p className="text-white/80 text-sm font-medium">يفتح بضغطة واحدة ويشتغل بدون إنترنت</p>
+            <h2 className="font-black text-lg">{t('install.title')}</h2>
+            <p className="text-white/80 text-sm font-medium">{t('install.subtitle')}</p>
           </div>
           <button
             onClick={() => close(false)}
             className="w-9 h-9 grid place-items-center rounded-full bg-white/15"
-            aria-label="إغلاق"
+            aria-label={t('common.close')}
           >
             <X size={20} />
           </button>
@@ -67,46 +69,24 @@ export default function InstallHint() {
         <div className="p-4 space-y-3">
           {ios ? (
             <>
-              <Step
-                n={1}
-                icon={<Share size={20} className="text-green" />}
-                text="اضغط زر «مشاركة» في أسفل سفاري (المربّع مع السهم للأعلى)."
-              />
-              <Step
-                n={2}
-                icon={<Plus size={20} className="text-green" />}
-                text="اختر «إضافة إلى الشاشة الرئيسية» (Add to Home Screen)."
-              />
-              <Step
-                n={3}
-                icon={<Smartphone size={20} className="text-green" />}
-                text="اضغط «إضافة» — وبيطلع أيقونة التطبيق على شاشتك."
-              />
-              <p className="text-xs text-muted font-bold text-center pt-1">
-                ملاحظة: لازم تفتح الموقع من <span className="text-green">Safari</span> مو من تطبيق ثاني.
-              </p>
+              <Step n={1} icon={<Share size={20} className="text-green" />} text={t('install.ios1')} />
+              <Step n={2} icon={<Plus size={20} className="text-green" />} text={t('install.ios2')} />
+              <Step n={3} icon={<Smartphone size={20} className="text-green" />} text={t('install.ios3')} />
+              <p className="text-xs text-muted font-bold text-center pt-1">{t('install.iosNote')}</p>
             </>
           ) : (
             <>
-              <Step
-                n={1}
-                icon={<Plus size={20} className="text-green" />}
-                text="افتح قائمة المتصفّح (⋮) واختر «تثبيت التطبيق» أو «Add to Home screen»."
-              />
-              <Step
-                n={2}
-                icon={<Smartphone size={20} className="text-green" />}
-                text="أكّد التثبيت — وبيشتغل التطبيق بدون إنترنت."
-              />
+              <Step n={1} icon={<Plus size={20} className="text-green" />} text={t('install.other1')} />
+              <Step n={2} icon={<Smartphone size={20} className="text-green" />} text={t('install.other2')} />
             </>
           )}
 
           <div className="flex gap-2 pt-2">
             <button onClick={() => close(true)} className="btn-primary flex-1">
-              تمام، فهمت
+              {t('install.gotIt')}
             </button>
             <button onClick={() => close(false)} className="btn-ghost">
-              لاحقاً
+              {t('install.later')}
             </button>
           </div>
         </div>

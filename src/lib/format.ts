@@ -37,3 +37,28 @@ export function uid(prefix = 'id'): string {
 export function todayISODate(): string {
   return new Date().toISOString().slice(0, 10);
 }
+
+// ---- locale-aware dates -----------------------------------------------------
+// EN → M/D · AR/TR → D/M
+export function fmtDayMonth(d: Date, lang: string): string {
+  const day = d.getDate();
+  const m = d.getMonth() + 1;
+  return lang === 'en' ? `${m}/${day}` : `${day}/${m}`;
+}
+
+// EN → M/D/YYYY · AR/TR → D/M/YYYY
+export function fmtFullDate(d: Date, lang: string): string {
+  const day = d.getDate();
+  const m = d.getMonth() + 1;
+  const y = d.getFullYear();
+  return lang === 'en' ? `${m}/${day}/${y}` : `${day}/${m}/${y}`;
+}
+
+/** Localized long month name via Intl. */
+export function monthName(lang: string, d = new Date()): string {
+  try {
+    return new Intl.DateTimeFormat(lang, { month: 'long' }).format(d);
+  } catch {
+    return new Intl.DateTimeFormat('en', { month: 'long' }).format(d);
+  }
+}

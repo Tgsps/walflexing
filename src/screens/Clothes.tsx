@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, ShoppingBag, Check, Store, ChevronDown } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import ScreenHeader from '../components/ScreenHeader';
@@ -7,20 +8,13 @@ import Modal from '../components/Modal';
 import { WARDROBE_STORES } from '../data/seed';
 import { clothingThisMonth } from '../lib/calc';
 import { fmtTRY, fmtUSD, toUSD, uid } from '../lib/format';
-import type { OwnedItem, Priority, WardrobeCategory, WardrobeStatus, WishlistItem } from '../types';
+import { tWardrobeCat, tColor, tOwnedName, tWishName, tStoreSpec } from '../i18n/content';
+import type { OwnedItem, Priority, WardrobeCategory, WishlistItem } from '../types';
 
 type Tab = 'owned' | 'wishlist';
 
 const CATEGORIES: WardrobeCategory[] = ['قمصان', 'بنطلونات', 'طبقات', 'أحذية', 'إكسسوار'];
-const CAT_EMOJI: Record<WardrobeCategory, string> = {
-  قمصان: '👕',
-  بنطلونات: '👖',
-  طبقات: '🧥',
-  أحذية: '👟',
-  إكسسوار: '⌚',
-};
-const STATUS_LABEL: Record<WardrobeStatus, string> = { owned: 'موجود', sold: 'مُباع', damaged: 'تالف' };
-const PRIORITY_LABEL: Record<Priority, string> = { high: 'عالية', medium: 'متوسطة', low: 'منخفضة' };
+const CAT_EMOJI: Record<WardrobeCategory, string> = { قمصان: '👕', بنطلونات: '👖', طبقات: '🧥', أحذية: '👟', إكسسوار: '⌚' };
 const PRIORITY_STYLE: Record<Priority, string> = {
   high: 'bg-danger/10 text-danger border-danger/40',
   medium: 'bg-warn/10 text-[#9a7400] border-warn/40',
@@ -29,14 +23,15 @@ const PRIORITY_STYLE: Record<Priority, string> = {
 const PRIORITY_ORDER: Record<Priority, number> = { high: 0, medium: 1, low: 2 };
 
 function guessCategory(name: string): WardrobeCategory {
-  if (/بوت|سنيكر|حذاء|كندرة|چلسي/.test(name)) return 'أحذية';
-  if (/جينز|چينو|بنطل|شورت/.test(name)) return 'بنطلونات';
-  if (/بليزر|كنزة|جاكيت|معطف|طبق|سترة/.test(name)) return 'طبقات';
-  if (/قميص|تيشيرت|تي شيرت|بلوزة/.test(name)) return 'قمصان';
+  if (/بوت|سنيكر|حذاء|كندرة|چلسي|boot|sneaker|shoe|chelsea/i.test(name)) return 'أحذية';
+  if (/جينز|چينو|بنطل|شورت|jean|chino|pant|short/i.test(name)) return 'بنطلونات';
+  if (/بليزر|كنزة|جاكيت|معطف|طبق|سترة|blazer|sweater|jacket|coat|ceket|kazak/i.test(name)) return 'طبقات';
+  if (/قميص|تيشيرت|تي شيرت|بلوزة|shirt|tee|gömlek/i.test(name)) return 'قمصان';
   return 'إكسسوار';
 }
 
 export default function Clothes() {
+  const { t } = useTranslation();
   const { data } = useApp();
   const rate = data.settings.exchangeRate;
   const [tab, setTab] = useState<Tab>('owned');
@@ -48,13 +43,12 @@ export default function Clothes() {
 
   return (
     <div>
-      <ScreenHeader emoji="👔" title="الملابس" subtitle="خزانتك وقائمة الشراء بستايل أنيق" />
+      <ScreenHeader emoji="👔" title={t('clothes.title')} subtitle={t('clothes.subtitle')} />
 
-      {/* ميزانية الملابس */}
       <Card className="mb-3">
         <div className="flex items-center justify-between mb-2">
-          <span className="font-black text-green">صرفت على الملابس هالشهر</span>
-          <div className="text-left">
+          <span className="font-black text-green">{t('clothes.spentThisMonth')}</span>
+          <div className="text-end">
             <div className={`font-black num ${over ? 'text-danger' : 'text-green'}`}>{fmtTRY(spent)}</div>
             <div className="text-xs text-muted font-bold num">{fmtUSD(toUSD(spent, rate))}</div>
           </div>
@@ -62,28 +56,24 @@ export default function Clothes() {
         {budget > 0 ? (
           <>
             <div className="w-full h-2.5 rounded-full bg-line overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${pct}%`, background: over ? '#D9534F' : '#0E4D3C' }}
-              />
+              <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: over ? '#D9534F' : '#062D23' }} />
             </div>
             <div className="text-xs font-bold text-muted mt-1.5 num">
-              من ميزانية {fmtTRY(budget)} {over ? '· تجاوزت! ⚠️' : ''}
+              {t('clothes.budgetOf', { budget: fmtTRY(budget) })}
+              {over ? t('clothes.over') : ''}
             </div>
           </>
         ) : (
-          <p className="text-xs text-muted font-bold">
-            حدّد ميزانية ملابس شهرية من الإعدادات عشان يطلع شريط التتبّع.
-          </p>
+          <p className="text-xs text-muted font-bold">{t('clothes.noBudget')}</p>
         )}
       </Card>
 
       <div className="grid grid-cols-2 gap-2 mb-4 bg-card rounded-2xl p-1 border border-line">
         <TabBtn active={tab === 'owned'} onClick={() => setTab('owned')}>
-          👔 خزانتي
+          {t('clothes.tabWardrobe')}
         </TabBtn>
         <TabBtn active={tab === 'wishlist'} onClick={() => setTab('wishlist')}>
-          🛍️ قائمة الشراء
+          {t('clothes.tabWishlist')}
         </TabBtn>
       </div>
 
@@ -94,29 +84,30 @@ export default function Clothes() {
   );
 }
 
-function TabBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button
-      onClick={onClick}
-      className={`py-2.5 rounded-xl font-black text-sm transition ${
-        active ? 'bg-green text-white shadow-soft' : 'text-muted'
-      }`}
-    >
+    <button onClick={onClick} className={`py-2.5 rounded-xl font-black text-sm transition ${active ? 'bg-green text-white shadow-soft' : 'text-muted'}`}>
       {children}
     </button>
   );
 }
 
-// ---------------------------------------------------------------- خزانتي
+function CatSelect({ value, onChange }: { value: WardrobeCategory; onChange: (c: WardrobeCategory) => void }) {
+  const { t } = useTranslation();
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value as WardrobeCategory)} className="field">
+      {CATEGORIES.map((c) => (
+        <option key={c} value={c}>
+          {CAT_EMOJI[c]} {tWardrobeCat(c, t)}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+// ---------------------------------------------------------------- wardrobe
 function OwnedTab() {
+  const { t } = useTranslation();
   const { data, update } = useApp();
   const rate = data.settings.exchangeRate;
   const [adding, setAdding] = useState(false);
@@ -136,20 +127,15 @@ function OwnedTab() {
         return (
           <div key={cat} className="mb-4">
             <h3 className="font-black text-green px-1 mb-2">
-              {CAT_EMOJI[cat]} {cat} <span className="text-muted font-bold num">({items.length})</span>
+              {CAT_EMOJI[cat]} {tWardrobeCat(cat, t)} <span className="text-muted font-bold num">({items.length})</span>
             </h3>
             <ul className="space-y-2">
               {items.map((o) => (
-                <li
-                  key={o.id}
-                  className={`rounded-2xl border p-3 flex items-center gap-3 ${
-                    o.status === 'owned' ? 'bg-card border-line' : 'bg-cream/60 border-line opacity-70'
-                  }`}
-                >
+                <li key={o.id} className={`rounded-2xl border p-3 flex items-center gap-3 ${o.status === 'owned' ? 'bg-card border-line' : 'bg-cream/60 border-line opacity-70'}`}>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-ink truncate">{o.name}</div>
+                    <div className="font-bold text-ink truncate">{tOwnedName(o.id, t, o.name)}</div>
                     <div className="text-xs text-muted font-bold">
-                      {o.color}
+                      {tColor(o.color, t)}
                       {o.store ? ` · ${o.store}` : ''}
                       {o.pricePaid ? ` · ${fmtTRY(o.pricePaid)}` : ''}
                     </div>
@@ -157,14 +143,10 @@ function OwnedTab() {
                   <button
                     onClick={() => cycleStatus(o.id)}
                     className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-black border-2 ${
-                      o.status === 'owned'
-                        ? 'border-ok/50 text-ok'
-                        : o.status === 'sold'
-                          ? 'border-muted/40 text-muted'
-                          : 'border-danger/50 text-danger'
+                      o.status === 'owned' ? 'border-ok/50 text-ok' : o.status === 'sold' ? 'border-muted/40 text-muted' : 'border-danger/50 text-danger'
                     }`}
                   >
-                    {STATUS_LABEL[o.status]}
+                    {t(`wardrobeStatus.${o.status}`)}
                   </button>
                   <button
                     onClick={() =>
@@ -173,7 +155,7 @@ function OwnedTab() {
                       })
                     }
                     className="w-8 h-8 grid place-items-center rounded-lg text-danger active:scale-95 shrink-0"
-                    aria-label="حذف"
+                    aria-label={t('common.delete')}
                   >
                     <Trash2 size={18} />
                   </button>
@@ -184,12 +166,10 @@ function OwnedTab() {
         );
       })}
 
-      {data.wardrobe.owned.length === 0 && (
-        <p className="text-center text-sm text-muted font-bold py-6">خزانتك فاضية 👔</p>
-      )}
+      {data.wardrobe.owned.length === 0 && <p className="text-center text-sm text-muted font-bold py-6">{t('clothes.emptyWardrobe')}</p>}
 
       <button onClick={() => setAdding(true)} className="btn-ghost w-full flex items-center justify-center gap-2">
-        <Plus size={18} /> أضف قطعة
+        <Plus size={18} /> {t('clothes.addPiece')}
       </button>
 
       {adding && <AddOwnedModal rate={rate} onClose={() => setAdding(false)} />}
@@ -198,13 +178,13 @@ function OwnedTab() {
 }
 
 function AddOwnedModal({ rate, onClose }: { rate: number; onClose: () => void }) {
+  const { t } = useTranslation();
   const { update } = useApp();
   const [name, setName] = useState('');
   const [category, setCategory] = useState<WardrobeCategory>('قمصان');
   const [color, setColor] = useState('');
   const [store, setStore] = useState('');
   const [price, setPrice] = useState('');
-  const countAsSpend = true;
 
   const save = () => {
     if (!name.trim()) return;
@@ -217,7 +197,7 @@ function AddOwnedModal({ rate, onClose }: { rate: number; onClose: () => void })
         color: color.trim() || '—',
         store: store.trim() || undefined,
         pricePaid: pricePaid || undefined,
-        purchaseDate: pricePaid && countAsSpend ? new Date().toISOString() : undefined,
+        purchaseDate: pricePaid ? new Date().toISOString() : undefined,
         status: 'owned',
       };
       d.wardrobe.owned.push(item);
@@ -226,64 +206,43 @@ function AddOwnedModal({ rate, onClose }: { rate: number; onClose: () => void })
   };
 
   return (
-    <Modal open onClose={onClose} title="قطعة جديدة للخزانة">
+    <Modal open onClose={onClose} title={t('clothes.newPiece')}>
       <div className="space-y-3">
-        <Labeled label="الاسم">
-          <input value={name} onChange={(e) => setName(e.target.value)} className="field" placeholder="مثلاً: قميص أسود fitted" />
+        <Labeled label={t('clothes.name')}>
+          <input value={name} onChange={(e) => setName(e.target.value)} className="field" placeholder={t('clothes.namePh')} />
         </Labeled>
-        <Labeled label="الفئة">
-          <select value={category} onChange={(e) => setCategory(e.target.value as WardrobeCategory)} className="field">
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {CAT_EMOJI[c]} {c}
-              </option>
-            ))}
-          </select>
+        <Labeled label={t('clothes.category')}>
+          <CatSelect value={category} onChange={setCategory} />
         </Labeled>
         <div className="grid grid-cols-2 gap-2">
-          <Labeled label="اللون">
-            <input value={color} onChange={(e) => setColor(e.target.value)} className="field" placeholder="أسود" />
+          <Labeled label={t('clothes.color')}>
+            <input value={color} onChange={(e) => setColor(e.target.value)} className="field" placeholder={t('clothes.colorPh')} />
           </Labeled>
-          <Labeled label="المتجر (اختياري)">
+          <Labeled label={t('clothes.storeOpt')}>
             <input value={store} onChange={(e) => setStore(e.target.value)} className="field" placeholder="Tudors" />
           </Labeled>
         </div>
-        <Labeled label="السعر المدفوع ₺ (اختياري)">
-          <input
-            type="number"
-            inputMode="numeric"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="field num"
-            placeholder="0"
-          />
+        <Labeled label={t('clothes.pricePaidOpt')}>
+          <input type="number" inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} className="field num" placeholder="0" />
         </Labeled>
-        <p className="text-xs text-muted font-bold">
-          لو حطّيت سعراً، بينحسب ضمن مصاريف هذا الشهر ({rate} ₺/$).
-        </p>
+        <p className="text-xs text-muted font-bold">{t('clothes.priceCountsNote', { rate })}</p>
         <button onClick={save} className="btn-primary w-full">
-          إضافة للخزانة
+          {t('clothes.addToWardrobe')}
         </button>
       </div>
     </Modal>
   );
 }
 
-// ---------------------------------------------------------------- قائمة الشراء
+// ---------------------------------------------------------------- wishlist
 function WishlistTab() {
+  const { t } = useTranslation();
   const { data, update } = useApp();
   const [adding, setAdding] = useState(false);
   const [buying, setBuying] = useState<WishlistItem | null>(null);
 
   const sorted = useMemo(
-    () =>
-      data.wardrobe.wishlist
-        .slice()
-        .sort(
-          (a, b) =>
-            Number(a.bought) - Number(b.bought) ||
-            PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority],
-        ),
+    () => data.wardrobe.wishlist.slice().sort((a, b) => Number(a.bought) - Number(b.bought) || PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]),
     [data.wardrobe.wishlist],
   );
 
@@ -291,32 +250,23 @@ function WishlistTab() {
     <div>
       <ul className="space-y-2 mb-3">
         {sorted.map((item) => (
-          <li
-            key={item.id}
-            className={`rounded-2xl border p-3 ${
-              item.bought ? 'bg-cream/60 border-line opacity-70' : 'bg-card border-line'
-            }`}
-          >
+          <li key={item.id} className={`rounded-2xl border p-3 ${item.bought ? 'bg-cream/60 border-line opacity-70' : 'bg-card border-line'}`}>
             <div className="flex items-start justify-between gap-2 mb-1">
-              <span className={`font-bold ${item.bought ? 'line-through text-muted' : 'text-ink'}`}>
-                {item.name}
-              </span>
-              <span className={`chip shrink-0 text-xs ${PRIORITY_STYLE[item.priority]}`}>
-                {PRIORITY_LABEL[item.priority]}
-              </span>
+              <span className={`font-bold ${item.bought ? 'line-through text-muted' : 'text-ink'}`}>{tWishName(item.id, t, item.name)}</span>
+              <span className={`chip shrink-0 text-xs ${PRIORITY_STYLE[item.priority]}`}>{t(`priority.${item.priority}`)}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="text-xs text-muted font-bold">
-                <Store size={12} className="inline ml-1" />
-                {item.store} · <span className="num">{fmtTRY(item.budgetMinTRY)}–{fmtTRY(item.budgetMaxTRY)}</span>
+                <Store size={12} className="inline mx-1" />
+                {item.store} ·{' '}
+                <span className="num">
+                  {fmtTRY(item.budgetMinTRY)}–{fmtTRY(item.budgetMaxTRY)}
+                </span>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 {!item.bought && (
-                  <button
-                    onClick={() => setBuying(item)}
-                    className="bg-green text-white rounded-lg px-3 py-1.5 text-sm font-bold active:scale-95 flex items-center gap-1"
-                  >
-                    <Check size={14} strokeWidth={3} /> اشتريتها
+                  <button onClick={() => setBuying(item)} className="bg-green text-white rounded-lg px-3 py-1.5 text-sm font-bold active:scale-95 flex items-center gap-1">
+                    <Check size={14} strokeWidth={3} /> {t('clothes.boughtIt')}
                   </button>
                 )}
                 <button
@@ -326,7 +276,7 @@ function WishlistTab() {
                     })
                   }
                   className="w-8 h-8 grid place-items-center rounded-lg text-danger active:scale-95"
-                  aria-label="حذف"
+                  aria-label={t('common.delete')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -336,12 +286,10 @@ function WishlistTab() {
         ))}
       </ul>
 
-      {data.wardrobe.wishlist.length === 0 && (
-        <p className="text-center text-sm text-muted font-bold py-6">قائمة الشراء فاضية 🛍️</p>
-      )}
+      {data.wardrobe.wishlist.length === 0 && <p className="text-center text-sm text-muted font-bold py-6">{t('clothes.emptyWishlist')}</p>}
 
       <button onClick={() => setAdding(true)} className="btn-ghost w-full flex items-center justify-center gap-2">
-        <Plus size={18} /> أضف للقائمة
+        <Plus size={18} /> {t('clothes.addToList')}
       </button>
 
       {adding && <AddWishlistModal onClose={() => setAdding(false)} />}
@@ -351,6 +299,7 @@ function WishlistTab() {
 }
 
 function AddWishlistModal({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
   const { update } = useApp();
   const [name, setName] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
@@ -375,31 +324,31 @@ function AddWishlistModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <Modal open onClose={onClose} title="قطعة لقائمة الشراء">
+    <Modal open onClose={onClose} title={t('clothes.newWish')}>
       <div className="space-y-3">
-        <Labeled label="الاسم">
-          <input value={name} onChange={(e) => setName(e.target.value)} className="field" placeholder="مثلاً: 🥾 چلسي بوت أسود" />
+        <Labeled label={t('clothes.name')}>
+          <input value={name} onChange={(e) => setName(e.target.value)} className="field" placeholder={t('clothes.wishNamePh')} />
         </Labeled>
-        <Labeled label="الأولوية">
+        <Labeled label={t('clothes.priority')}>
           <select value={priority} onChange={(e) => setPriority(e.target.value as Priority)} className="field">
-            <option value="high">عالية</option>
-            <option value="medium">متوسطة</option>
-            <option value="low">منخفضة</option>
+            <option value="high">{t('priority.high')}</option>
+            <option value="medium">{t('priority.medium')}</option>
+            <option value="low">{t('priority.low')}</option>
           </select>
         </Labeled>
-        <Labeled label="المتجر المقترح">
+        <Labeled label={t('clothes.suggestedStore')}>
           <input value={store} onChange={(e) => setStore(e.target.value)} className="field" placeholder="FLO / Koton" />
         </Labeled>
         <div className="grid grid-cols-2 gap-2">
-          <Labeled label="أقل ميزانية ₺">
+          <Labeled label={t('clothes.minBudget')}>
             <input type="number" inputMode="numeric" value={min} onChange={(e) => setMin(e.target.value)} className="field num" placeholder="800" />
           </Labeled>
-          <Labeled label="أعلى ميزانية ₺">
+          <Labeled label={t('clothes.maxBudget')}>
             <input type="number" inputMode="numeric" value={max} onChange={(e) => setMax(e.target.value)} className="field num" placeholder="1500" />
           </Labeled>
         </div>
         <button onClick={save} className="btn-primary w-full">
-          إضافة للقائمة
+          {t('clothes.addToList')}
         </button>
       </div>
     </Modal>
@@ -407,6 +356,7 @@ function AddWishlistModal({ onClose }: { onClose: () => void }) {
 }
 
 function BuyModal({ item, onClose }: { item: WishlistItem; onClose: () => void }) {
+  const { t } = useTranslation();
   const { update } = useApp();
   const [price, setPrice] = useState(String(item.budgetMinTRY || ''));
   const [category, setCategory] = useState<WardrobeCategory>(guessCategory(item.name));
@@ -431,47 +381,33 @@ function BuyModal({ item, onClose }: { item: WishlistItem; onClose: () => void }
   };
 
   return (
-    <Modal open onClose={onClose} title="اشتريتها 🎉">
+    <Modal open onClose={onClose} title={t('clothes.boughtTitle')}>
       <div className="space-y-3">
-        <p className="font-bold text-ink">{item.name}</p>
-        <Labeled label="السعر الفعلي ₺">
-          <input
-            type="number"
-            inputMode="numeric"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="field num"
-            autoFocus
-          />
+        <p className="font-bold text-ink">{tWishName(item.id, t, item.name)}</p>
+        <Labeled label={t('clothes.actualPrice')}>
+          <input type="number" inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} className="field num" autoFocus />
         </Labeled>
-        <Labeled label="الفئة">
-          <select value={category} onChange={(e) => setCategory(e.target.value as WardrobeCategory)} className="field">
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {CAT_EMOJI[c]} {c}
-              </option>
-            ))}
-          </select>
+        <Labeled label={t('clothes.category')}>
+          <CatSelect value={category} onChange={setCategory} />
         </Labeled>
-        <p className="text-xs text-muted font-bold">
-          بتنتقل لخزانتك، والسعر بينحسب ضمن مصاريف هذا الشهر.
-        </p>
+        <p className="text-xs text-muted font-bold">{t('clothes.buyNote')}</p>
         <button onClick={confirm} className="btn-primary w-full flex items-center justify-center gap-2">
-          <ShoppingBag size={18} /> أكّد الشراء
+          <ShoppingBag size={18} /> {t('clothes.confirmBuy')}
         </button>
       </div>
     </Modal>
   );
 }
 
-// ---------------------------------------------------------------- المتاجر
+// ---------------------------------------------------------------- stores
 function StoresCard() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <Card className="mt-4">
       <button onClick={() => setOpen((v) => !v)} className="w-full flex items-center justify-between">
         <span className="font-black text-green flex items-center gap-2">
-          <Store size={18} /> متاجر مقترحة في إسطنبول
+          <Store size={18} /> {t('clothes.storesTitle')}
         </span>
         <ChevronDown size={20} className={`text-muted transition ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -481,9 +417,9 @@ function StoresCard() {
             <li key={s.name} className="flex items-center justify-between bg-cream/60 rounded-xl border border-line px-3 py-2">
               <div>
                 <div className="font-black text-ink">{s.name}</div>
-                <div className="text-xs text-muted font-bold">{s.spec}</div>
+                <div className="text-xs text-muted font-bold">{tStoreSpec(s.name, t, s.spec)}</div>
               </div>
-              <div className="text-gold text-sm" aria-label={`${s.stars} نجوم`}>
+              <div className="text-gold text-sm">
                 {'★'.repeat(s.stars)}
                 <span className="text-line">{'★'.repeat(5 - s.stars)}</span>
               </div>
@@ -491,9 +427,7 @@ function StoresCard() {
           ))}
         </ul>
       )}
-      <p className="text-xs text-muted font-bold mt-3 text-center">
-        ستايل مرجعي: مينيمال أنيق — أسود · أبيض · كحلي · زيتي · قصّات مظبوطة بدون شعارات.
-      </p>
+      <p className="text-xs text-muted font-bold mt-3 text-center">{t('clothes.styleNote')}</p>
     </Card>
   );
 }

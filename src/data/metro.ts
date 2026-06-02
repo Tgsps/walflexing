@@ -29,16 +29,15 @@ export const M2 = {
   ] as MetroStation[],
 };
 
-/** تردد القطار حسب الوقت/اليوم الحالي */
-export function metroFrequency(d = new Date()): string {
+/** تردد القطار حسب الوقت/اليوم الحالي — يُرجع مفتاح ترجمة (metro.<token>) */
+export function metroFrequency(d = new Date()): 'peak' | 'offpeak' | 'weekend' | 'night' {
   const day = d.getDay(); // 0 أحد .. 6 سبت
   const h = d.getHours();
   const weekend = day === 0 || day === 6;
-  // ليلة الجمعة/السبت متأخرة
-  if ((day === 5 || day === 6) && (h >= 0 && h < 6)) return 'كل 30 دقيقة (خدمة ليلية)';
-  if (weekend) return 'كل 8-10 دقائق (عطلة)';
+  if ((day === 5 || day === 6) && h >= 0 && h < 6) return 'night';
+  if (weekend) return 'weekend';
   const peak = (h >= 7 && h <= 10) || (h >= 17 && h <= 20);
-  return peak ? 'كل 3-4 دقائق (ذروة)' : 'كل 5-7 دقائق';
+  return peak ? 'peak' : 'offpeak';
 }
 
 /** هل المترو شغّال الآن؟ (06:00 → 00:00) */

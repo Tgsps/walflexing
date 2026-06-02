@@ -1,8 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { Volume2 } from 'lucide-react';
 import { wordOfToday } from '../data/turkishWords';
+import { tWordCat } from '../i18n/content';
 import Card from './Card';
 
 export default function WordCard() {
+  const { t } = useTranslation();
   const { word, index, total } = wordOfToday();
 
   const speak = () => {
@@ -12,7 +15,7 @@ export default function WordCard() {
       speechSynthesis.cancel();
       speechSynthesis.speak(u);
     } catch {
-      /* غير مدعوم */
+      /* unsupported */
     }
   };
 
@@ -20,10 +23,10 @@ export default function WordCard() {
     <Card className="mb-3">
       <div className="flex items-center justify-between mb-1.5">
         <span className="font-black text-green" style={{ fontSize: 15 }}>
-          🗣️ كلمة اليوم
+          {t('word.title')}
         </span>
         <span className="chip" style={{ padding: '4px 12px', fontSize: 12 }}>
-          {word.emoji} {word.category}
+          {word.emoji} {tWordCat(word.category, t)}
         </span>
       </div>
 
@@ -36,15 +39,17 @@ export default function WordCard() {
             onClick={speak}
             className="pulse-gold grid place-items-center text-green active:scale-90"
             style={{ width: 40, height: 40, borderRadius: 9999, border: '2px solid rgb(var(--gold))', background: 'transparent' }}
-            aria-label="نطق"
+            aria-label={t('word.title')}
           >
             <Volume2 size={18} />
           </button>
         </div>
-        <div className="font-black mt-1.5" style={{ color: 'rgb(var(--gold))', fontSize: 20 }}>
+        <div dir="rtl" className="font-black mt-1.5" style={{ color: 'rgb(var(--gold))', fontSize: 20 }}>
           {word.ar}
         </div>
-        <div className="text-[13px] font-bold text-muted italic mt-0.5">النطق: {word.pron}</div>
+        <div dir="rtl" className="text-[13px] font-bold text-muted italic mt-0.5">
+          {t('word.pronunciation', { p: word.pron })}
+        </div>
       </div>
 
       <div className="rounded-full overflow-hidden" style={{ height: 4, background: 'rgb(var(--line))' }}>
@@ -54,7 +59,7 @@ export default function WordCard() {
         />
       </div>
       <div className="num text-center font-bold text-muted mt-1.5" style={{ fontSize: 11 }}>
-        الكلمة {index} من {total}
+        {t('word.counter', { i: index, total })}
       </div>
     </Card>
   );

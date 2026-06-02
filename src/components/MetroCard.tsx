@@ -1,12 +1,15 @@
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../state/AppContext';
 import { M2, metroFrequency, metroRunning } from '../data/metro';
 import Card from './Card';
 
 export default function MetroCard() {
+  const { t, i18n } = useTranslation();
   const { data, update } = useApp();
+  const ar = i18n.language === 'ar';
   const station = data.settings.metroStation;
   const running = metroRunning();
-  const freq = metroFrequency();
+  const freqKey = metroFrequency();
 
   return (
     <Card className="mb-3">
@@ -26,21 +29,21 @@ export default function MetroCard() {
             M2
           </span>
           <span className="font-black text-green" style={{ fontSize: 15 }}>
-            مترو إسطنبول
+            {t('metro.title')}
           </span>
         </div>
         <span className="font-black" style={{ fontSize: 12, color: running ? 'rgb(var(--ok))' : 'rgb(var(--danger))' }}>
-          ● {running ? 'شغّال' : 'متوقّف'}
+          ● {running ? t('metro.running') : t('metro.stopped')}
         </span>
       </div>
 
       <div className="flex gap-2 mb-2.5">
         {[
-          ['⏰ أول مترو', M2.firstTrain],
-          ['🌙 آخر مترو', M2.lastTrain],
+          [t('metro.firstTrain'), M2.firstTrain],
+          [t('metro.lastTrain'), M2.lastTrain],
         ].map(([l, v]) => (
           <div
-            key={l}
+            key={v}
             className="flex-1 text-center"
             style={{ background: 'rgb(var(--cream) / 0.6)', borderRadius: 14, padding: 10 }}
           >
@@ -50,10 +53,10 @@ export default function MetroCard() {
         ))}
       </div>
 
-      <div className="text-[13px] font-bold text-muted mb-2.5">🚇 {freq}</div>
+      <div className="text-[13px] font-bold text-muted mb-2.5">🚇 {t(`metro.${freqKey}`)}</div>
 
       <label className="block">
-        <span className="text-xs font-bold text-muted uppercase tracking-wide">محطتي الأقرب</span>
+        <span className="text-xs font-bold text-muted uppercase tracking-wide">{t('metro.myStation')}</span>
         <select
           value={station ?? ''}
           onChange={(e) =>
@@ -63,10 +66,10 @@ export default function MetroCard() {
           }
           className="field mt-1"
         >
-          <option value="">اختر محطتك…</option>
+          <option value="">{t('metro.pickStation')}</option>
           {M2.stations.map((s) => (
             <option key={s.id} value={s.ar}>
-              {s.ar} — {s.tr}
+              {ar ? `${s.ar} — ${s.tr}` : s.tr}
             </option>
           ))}
         </select>

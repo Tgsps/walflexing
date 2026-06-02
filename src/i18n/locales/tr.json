@@ -51,7 +51,8 @@
     "gymName": "Salonun adı",
     "gymFee": "Aylık ücret (₺)",
     "gymNote": "Sabit harcamalarına otomatik eklenir.",
-    "gymDefault": "Spor salonu üyeliği"
+    "gymDefault": "Spor salonu üyeliği",
+    "defaultName": "dostum"
   },
   "dash": {
     "greeting": "Selam,",
@@ -477,6 +478,10 @@
     "b_yogurt_apple": "Yoğurt + elma",
     "b_boiled_eggs_cucumber": "Haşlanmış yumurta + salatalık",
     "lunch_default": "Dünkü akşam yemeğinden kalanlar · ya da hafif salata + protein"
+  },
+  "medNames": {
+    "m_vitd": "D vitamini",
+    "m_omega": "Omega 3"
   },
   "groceryNames": {
     "g_chicken": "Donmuş tavuk göğsü",

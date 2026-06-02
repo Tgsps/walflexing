@@ -10,34 +10,6 @@ export const OCCASIONS: { key: Occasion; label: string; emoji: string }[] = [
   { key: 'sport', label: 'رياضي', emoji: '🏃' },
 ];
 
-// جدول الاقتراحات (طقس × مناسبة)
-const TABLE: Record<TempBand | 'rain', Record<Occasion, string>> = {
-  hot: {
-    formal: 'قميص أبيض + بنطلون',
-    casual: 'قميص زيتي + جينز',
-    outing: 'قميص أبيض مفتوح + جينز',
-    sport: 'تيشيرت + شورت',
-  },
-  mild: {
-    formal: 'بليزر + قميص أبيض',
-    casual: 'قميص أسود + جينز',
-    outing: 'قميص + جينز + سنيكر',
-    sport: 'تيشيرت + بنطلون رياضي',
-  },
-  cold: {
-    formal: 'بليزر + كنزة + بنطلون',
-    casual: 'كنزة داكنة + جينز',
-    outing: 'كنزة + جينز + چلسي بوت',
-    sport: 'هودي + بنطلون رياضي',
-  },
-  rain: {
-    formal: 'بليزر + قميص + حذاء جيد ☔',
-    casual: 'كنزة + جينز + چلسي بوت ☔',
-    outing: 'كنزة + جينز + چلسي بوت ☔',
-    sport: 'هودي مضاد للمطر ☔',
-  },
-};
-
 // كلمات مفتاحية لمطابقة القطع الموجودة فعلاً بالخزانة
 const KEYWORDS: Record<Occasion, string[]> = {
   formal: ['بليزر', 'قميص', 'أبيض', 'بنطلون'],
@@ -47,8 +19,8 @@ const KEYWORDS: Record<Occasion, string[]> = {
 };
 
 export interface OutfitSuggestion {
-  text: string;
-  haveItems: string[]; // قطع موجودة بالخزانة تناسب المناسبة
+  textKey: string; // مفتاح الترجمة outfits.<band|rain>_<occasion>
+  haveIds: string[]; // معرّفات قطع موجودة بالخزانة تناسب المناسبة
   isRain: boolean;
 }
 
@@ -59,12 +31,11 @@ export function suggestOutfit(
   owned: OwnedItem[],
 ): OutfitSuggestion {
   const key = isRain ? 'rain' : band;
-  const text = TABLE[key][occasion];
   const kws = KEYWORDS[occasion];
-  const haveItems = owned
+  const haveIds = owned
     .filter((o) => o.status === 'owned')
     .filter((o) => kws.some((k) => o.name.includes(k)))
-    .map((o) => o.name)
+    .map((o) => o.id)
     .slice(0, 4);
-  return { text, haveItems, isRain };
+  return { textKey: `${key}_${occasion}`, haveIds, isRain };
 }
