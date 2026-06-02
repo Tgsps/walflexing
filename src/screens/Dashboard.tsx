@@ -21,10 +21,10 @@ import {
 import { fmtTRY, fmtUSD, toUSD } from '../lib/format';
 
 const SLICE_COLORS = {
-  fixed: '#0E4D3C',
-  groceries: '#C9A227',
-  variable: '#1C7A60',
-  remaining: '#E7E1D3',
+  fixed: '#062D23',
+  groceries: '#C49418',
+  variable: '#0E5541',
+  remaining: '#E1DAC8',
 };
 
 export default function Dashboard() {

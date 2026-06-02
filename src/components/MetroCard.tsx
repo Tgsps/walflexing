@@ -10,36 +10,50 @@ export default function MetroCard() {
 
   return (
     <Card className="mb-3">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span
-            className="w-7 h-7 rounded-full grid place-items-center text-white text-xs font-black"
-            style={{ background: M2.color }}
+            className="grid place-items-center text-white font-black"
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 9999,
+              fontSize: 12,
+              background: '#009640',
+              boxShadow: '0 0 0 2px rgb(var(--gold)), 0 2px 8px rgba(6,45,35,.2)',
+            }}
           >
             M2
           </span>
-          <span className="font-black text-green">مترو إسطنبول</span>
+          <span className="font-black text-green" style={{ fontSize: 15 }}>
+            مترو إسطنبول
+          </span>
         </div>
-        <span className={`text-xs font-black ${running ? 'text-ok' : 'text-danger'}`}>
-          {running ? '● شغّال' : '● متوقّف'}
+        <span className="font-black" style={{ fontSize: 12, color: running ? 'rgb(var(--ok))' : 'rgb(var(--danger))' }}>
+          ● {running ? 'شغّال' : 'متوقّف'}
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 mb-2">
-        <div className="bg-cream/60 rounded-xl p-2.5 text-center">
-          <div className="text-xs text-muted font-bold">⏰ أول مترو</div>
-          <div className="font-black text-green num">{M2.firstTrain}</div>
-        </div>
-        <div className="bg-cream/60 rounded-xl p-2.5 text-center">
-          <div className="text-xs text-muted font-bold">🌙 آخر مترو</div>
-          <div className="font-black text-green num">{M2.lastTrain}</div>
-        </div>
+      <div className="flex gap-2 mb-2.5">
+        {[
+          ['⏰ أول مترو', M2.firstTrain],
+          ['🌙 آخر مترو', M2.lastTrain],
+        ].map(([l, v]) => (
+          <div
+            key={l}
+            className="flex-1 text-center"
+            style={{ background: 'rgb(var(--cream) / 0.6)', borderRadius: 14, padding: 10 }}
+          >
+            <div className="text-xs font-bold text-muted">{l}</div>
+            <div className="num font-black text-green">{v}</div>
+          </div>
+        ))}
       </div>
 
-      <div className="text-sm font-bold text-muted mb-2">🚇 {freq}</div>
+      <div className="text-[13px] font-bold text-muted mb-2.5">🚇 {freq}</div>
 
       <label className="block">
-        <span className="text-xs font-bold text-muted">محطتي الأقرب</span>
+        <span className="text-xs font-bold text-muted uppercase tracking-wide">محطتي الأقرب</span>
         <select
           value={station ?? ''}
           onChange={(e) =>

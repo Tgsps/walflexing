@@ -9,13 +9,14 @@ interface Props {
 
 export default function ScreenHeader({ emoji, title, subtitle, action }: Props) {
   return (
-    <header className="flex items-center gap-3 mb-4">
-      <div className="w-12 h-12 shrink-0 rounded-[13px] bg-green text-white grid place-items-center text-2xl shadow-soft">
-        <span aria-hidden>{emoji}</span>
+    <header className="flex items-start gap-3.5 mb-5">
+      <div className="leading-none shrink-0" style={{ fontSize: 44 }} aria-hidden>
+        {emoji}
       </div>
       <div className="flex-1 min-w-0">
-        <h1 className="text-2xl font-black text-green leading-tight truncate">{title}</h1>
-        {subtitle && <p className="text-sm text-muted font-medium leading-tight">{subtitle}</p>}
+        <h1 className="text-2xl font-black text-green leading-tight">{title}</h1>
+        <div className="gold-rule mt-1.5" />
+        {subtitle && <p className="text-sm text-muted font-medium mt-1.5">{subtitle}</p>}
       </div>
       {action}
     </header>

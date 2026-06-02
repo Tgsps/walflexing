@@ -2,38 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-/* الألوان كثلاثيات RGB (تدعم شفافية Tailwind) */
+/* ============================================================================
+   "Hot Virginia" — Dark Emerald × Burnished Gold × Aged Ivory
+   الألوان كثلاثيات RGB (تدعم شفافية Tailwind: rgb(var(--x) / <alpha>))
+   ============================================================================ */
 :root {
-  --green: 14 77 60;
-  --green-2: 21 97 76;
-  --green-3: 28 122 96;
-  --gold: 201 162 39;
-  --gold-soft: 243 231 196;
-  --cream: 251 248 241;
-  --card: 255 255 255;
-  --ink: 30 42 36;
-  --muted: 110 122 114;
-  --line: 231 225 211;
-  --ok: 46 158 107;
-  --warn: 224 169 46;
-  --danger: 217 83 79;
+  --green: 6 45 35; /* #062D23 زمردي عميق */
+  --green-2: 10 65 50; /* #0A4132 */
+  --green-3: 14 85 65; /* #0E5541 */
+  --gold: 196 148 24; /* #C49418 ذهبي محترق */
+  --gold-soft: 250 240 210; /* #FAF0D2 */
+  --cream: 248 244 234; /* #F8F4EA عاجي دافئ */
+  --card: 255 252 245; /* #FFFCF5 أبيض دافئ */
+  --ink: 22 28 24; /* #161C18 */
+  --muted: 98 112 104; /* #627068 */
+  --line: 225 218 200; /* #E1DAC8 */
+  --ok: 38 140 90; /* #268C5A */
+  --warn: 200 148 30; /* #C8941E */
+  --danger: 195 65 60; /* #C3413C */
 }
 
 /* الوضع الداكن — نفس الهوية بألوان معكوسة */
 .dark {
-  --green: 28 122 96;
-  --green-2: 34 150 118;
-  --green-3: 46 170 134;
-  --gold: 201 162 39;
-  --gold-soft: 45 58 40;
-  --cream: 10 31 24;
-  --card: 17 41 32;
-  --ink: 232 240 236;
-  --muted: 122 154 138;
-  --line: 30 61 47;
-  --ok: 58 190 130;
-  --warn: 224 169 46;
-  --danger: 233 110 106;
+  --green: 18 90 68; /* #125A44 */
+  --green-2: 24 112 84; /* #187054 */
+  --green-3: 32 135 100; /* #208764 */
+  --gold: 196 148 24; /* ثابت */
+  --gold-soft: 35 48 32; /* #233020 */
+  --cream: 8 18 14; /* #08120E */
+  --card: 12 28 20; /* #0C1C14 */
+  --ink: 230 238 232; /* #E6EEE8 */
+  --muted: 110 138 120; /* #6E8A78 */
+  --line: 24 48 36; /* #183024 */
+  --ok: 48 175 110;
+  --warn: 200 148 30;
+  --danger: 220 95 88;
 }
 
 * {
@@ -49,50 +52,71 @@ body,
 body {
   margin: 0;
   font-family: 'Tajawal', system-ui, sans-serif;
+  font-weight: 500;
   background: rgb(var(--cream));
   color: rgb(var(--ink));
   direction: rtl;
   text-align: right;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   overscroll-behavior-y: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* numbers stay LTR even inside RTL text */
+/* numbers stay LTR + tabular so columns don't jitter */
 .num {
   direction: ltr;
   unicode-bidi: isolate;
   display: inline-block;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* gold decorative rule under titles / section heads */
+.gold-rule {
+  width: 48px;
+  height: 2px;
+  border-radius: 9999px;
+  background: rgb(var(--gold));
 }
 
 @layer components {
+  /* Primary card: warm surface + single 2px gold BOTTOM border + warm shadow */
   .app-card {
-    @apply bg-card rounded-card shadow-card border-t-2 border-gold/70 p-4;
+    @apply bg-card rounded-card shadow-card border-b-2 border-gold/60 p-5;
   }
   .btn-primary {
-    @apply bg-green text-white rounded-xl px-4 py-3 font-bold active:scale-[.98] transition disabled:opacity-50;
+    @apply bg-green text-white rounded-[14px] px-6 py-3.5 font-bold transition
+      active:scale-[.97] active:brightness-90 disabled:opacity-50;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent);
   }
   .btn-gold {
-    @apply bg-gold text-green rounded-xl px-4 py-3 font-bold active:scale-[.98] transition;
+    @apply bg-gold text-green rounded-[14px] px-6 py-3.5 font-bold transition active:scale-[.97];
   }
   .btn-ghost {
-    @apply border-2 border-gold/70 text-green rounded-xl px-4 py-2.5 font-bold active:scale-[.98] transition;
+    @apply border-2 border-gold/50 text-green rounded-[14px] px-5 py-3 font-bold transition
+      active:scale-[.97] hover:bg-gold/10;
   }
   .chip {
-    @apply rounded-full px-3 py-1.5 text-sm font-bold border-2 transition;
+    @apply rounded-full px-4 py-2 text-sm font-bold border-2 border-line bg-cream text-ink transition;
   }
   .field {
-    @apply w-full bg-cream/60 border-2 border-line rounded-xl px-3 py-2.5 text-ink font-bold
-      focus:border-gold focus:outline-none;
+    @apply w-full bg-cream/60 border-2 border-line rounded-[14px] px-3.5 py-3 text-ink font-bold
+      transition focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/15;
   }
+}
+
+.dark .app-card {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
 /* safe areas for iPhone notch / home indicator */
 .safe-top {
   padding-top: env(safe-area-inset-top);
 }
+/* clear the floating Pill Island nav */
 .pb-safe {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  padding-bottom: calc(120px + env(safe-area-inset-bottom));
 }
 .nav-safe {
   padding-bottom: env(safe-area-inset-bottom);
@@ -107,6 +131,7 @@ body {
   scrollbar-width: none;
 }
 
+/* ---- Animations (entrance = transform-only so content always paints) ---- */
 @keyframes pop {
   0% {
     transform: scale(0.96);
@@ -133,4 +158,42 @@ body {
 }
 .animate-slideup {
   animation: slideup 0.22s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: none;
+  }
+}
+.fade-up {
+  animation: fadeInUp 0.28s ease-out both;
+}
+
+@keyframes pulse-gold {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(196, 148, 24, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(196, 148, 24, 0);
+  }
+}
+.pulse-gold {
+  animation: pulse-gold 2s infinite;
+}
+
+@keyframes glow-green {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(14, 85, 65, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(14, 85, 65, 0.6);
+  }
+}
+.glow-green {
+  animation: glow-green 2.2s ease-in-out infinite;
 }

@@ -12,35 +12,32 @@ const items = [
 
 export default function BottomNav() {
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 bg-card border-t border-line shadow-nav nav-safe">
-      <ul className="max-w-[480px] mx-auto grid grid-cols-6">
+    <div
+      className="fixed inset-x-0 bottom-0 z-40 flex justify-center pointer-events-none"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
+    >
+      <nav className="pointer-events-auto max-w-[360px] w-[calc(100%-32px)] flex items-center justify-between gap-1 rounded-[28px] bg-green/95 backdrop-blur-xl shadow-nav ring-1 ring-white/10 px-2.5 py-2">
         {items.map(({ to, label, Icon, end }) => (
-          <li key={to}>
-            <NavLink
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                `flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-bold transition ${
-                  isActive ? 'text-green' : 'text-muted'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <span
-                    className={`grid place-items-center w-10 h-7 rounded-full transition ${
-                      isActive ? 'bg-gold-soft' : 'bg-transparent'
-                    }`}
-                  >
-                    <Icon size={20} strokeWidth={isActive ? 2.6 : 2} />
-                  </span>
-                  <span>{label}</span>
-                </>
-              )}
-            </NavLink>
-          </li>
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={({ isActive }) =>
+              isActive
+                ? 'flex items-center gap-1.5 shrink-0 rounded-full bg-gold/20 text-gold px-3.5 py-2'
+                : 'flex-1 flex flex-col items-center text-white/50 py-1.5 active:scale-90 transition'
+            }
+            aria-label={label}
+          >
+            {({ isActive }) => (
+              <>
+                <Icon size={21} strokeWidth={isActive ? 2.6 : 2} />
+                {isActive && <span className="text-[13px] font-extrabold">{label}</span>}
+              </>
+            )}
+          </NavLink>
         ))}
-      </ul>
-    </nav>
+      </nav>
+    </div>
   );
 }

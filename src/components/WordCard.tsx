@@ -18,27 +18,42 @@ export default function WordCard() {
 
   return (
     <Card className="mb-3">
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-black text-green">🗣️ كلمة اليوم</span>
-        <span className="text-xs font-bold text-muted">
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="font-black text-green" style={{ fontSize: 15 }}>
+          🗣️ كلمة اليوم
+        </span>
+        <span className="chip" style={{ padding: '4px 12px', fontSize: 12 }}>
           {word.emoji} {word.category}
         </span>
       </div>
 
-      <div className="text-center py-2">
-        <div className="flex items-center justify-center gap-2">
-          <span className="text-2xl font-black text-ink" dir="ltr">
+      <div className="text-center py-1.5">
+        <div className="flex items-center justify-center gap-2.5">
+          <span dir="ltr" className="font-black text-ink" style={{ fontSize: 24, letterSpacing: '.02em' }}>
             {word.tr}
           </span>
-          <button onClick={speak} className="text-green active:scale-90" aria-label="نطق">
-            <Volume2 size={20} />
+          <button
+            onClick={speak}
+            className="pulse-gold grid place-items-center text-green active:scale-90"
+            style={{ width: 40, height: 40, borderRadius: 9999, border: '2px solid rgb(var(--gold))', background: 'transparent' }}
+            aria-label="نطق"
+          >
+            <Volume2 size={18} />
           </button>
         </div>
-        <div className="text-gold font-black mt-1">{word.ar}</div>
-        <div className="text-sm text-muted font-bold mt-0.5">النطق: {word.pron}</div>
+        <div className="font-black mt-1.5" style={{ color: 'rgb(var(--gold))', fontSize: 20 }}>
+          {word.ar}
+        </div>
+        <div className="text-[13px] font-bold text-muted italic mt-0.5">النطق: {word.pron}</div>
       </div>
 
-      <div className="text-xs font-bold text-muted text-center border-t border-line pt-2 num">
+      <div className="rounded-full overflow-hidden" style={{ height: 4, background: 'rgb(var(--line))' }}>
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${(index / total) * 100}%`, background: 'rgb(var(--gold))' }}
+        />
+      </div>
+      <div className="num text-center font-bold text-muted mt-1.5" style={{ fontSize: 11 }}>
         الكلمة {index} من {total}
       </div>
     </Card>

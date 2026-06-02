@@ -65,7 +65,7 @@ export default function App() {
 
   return (
     <div className="min-h-full">
-      <main className="max-w-[480px] mx-auto px-4 pt-5 pb-safe safe-top">
+      <main className="max-w-[480px] mx-auto px-5 pt-5 pb-safe safe-top">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/expenses" element={<Expenses />} />

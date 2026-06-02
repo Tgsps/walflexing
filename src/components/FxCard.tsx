@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import { getRate, type FxData } from '../lib/fx';
 import Card from './Card';
@@ -46,8 +45,7 @@ export default function FxCard() {
 
   const prev = data.settings.previousRate;
   const rose = prev != null && fx.rate > prev;
-  const fell = prev != null && fx.rate < prev;
-  const diff = prev != null ? fx.rate - prev : 0;
+  const diff = prev != null ? Math.abs(fx.rate - prev) : 0;
 
   const stale = Date.now() - new Date(fx.fetchedAt).getTime() > 24 * 3600 * 1000;
   const when = new Date(fx.fetchedAt);
@@ -61,30 +59,44 @@ export default function FxCard() {
       d.settings.exchangeRate = Math.round(fx.rate * 100) / 100;
     });
 
+  const bars = [7, 11, 8, 12, 9];
+
   return (
-    <Card className="mb-3">
-      <div className="flex items-center justify-between mb-1">
-        <span className="font-black text-green">💱 سعر الصرف اليوم</span>
-        <button onClick={useThisRate} className="text-xs font-bold text-green flex items-center gap-1 border-2 border-gold/70 rounded-lg px-2 py-1">
-          <RefreshCw size={13} /> استخدمه
+    <Card className="mb-3 relative">
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-black text-green" style={{ fontSize: 16 }}>
+          💱 سعر الصرف اليوم
+        </span>
+        <button
+          onClick={useThisRate}
+          className="chip"
+          style={{ padding: '5px 12px', fontSize: 12, borderColor: 'rgb(var(--gold))', color: 'rgb(var(--green))' }}
+        >
+          ↻ استخدمه
         </button>
       </div>
-      <div className="flex items-end gap-2">
-        <span className="text-2xl font-black text-ink num">
+      <div className="flex items-end gap-2.5">
+        <span className="num font-black text-ink" style={{ fontSize: 28 }}>
           $1 = {fx.rate.toFixed(2)} ₺
         </span>
-        {prev != null && diff !== 0 && (
-          <span className={`flex items-center gap-0.5 text-sm font-black num mb-1 ${rose ? 'text-danger' : 'text-ok'}`}>
-            {rose ? <ArrowUp size={15} /> : <ArrowDown size={15} />}
-            {Math.abs(diff).toFixed(2)}
+        {prev != null && diff > 0 && (
+          <span
+            className="num font-black flex items-center gap-0.5"
+            style={{ fontSize: 15, marginBottom: 4, color: rose ? 'rgb(var(--danger))' : 'rgb(var(--ok))' }}
+          >
+            {rose ? '▲' : '▼'} {diff.toFixed(2)}
           </span>
         )}
+        <div className="flex items-end gap-[3px] mr-auto" style={{ height: 26 }} aria-hidden>
+          {bars.map((h, i) => (
+            <span key={i} style={{ width: 4, height: h * 2, borderRadius: 9999, background: 'rgb(var(--gold) / 0.8)' }} />
+          ))}
+        </div>
       </div>
-      <div className="text-xs font-bold text-muted mt-1 num">
-        {stale ? '⚠️ أوفلاين — آخر قيمة محفوظة · ' : 'آخر تحديث: '}
+      <div className="num font-bold text-muted mt-1.5" style={{ fontSize: 11 }}>
+        {stale ? '⚠️ أوفلاين — آخر قيمة محفوظة · ' : ''}
         {whenLabel}
-        {rose && ' · الدولار ارتفع'}
-        {fell && ' · الدولار نزل'}
+        {prev != null && diff > 0 && (rose ? ' · الدولار ارتفع' : ' · الدولار نزل')}
       </div>
     </Card>
   );

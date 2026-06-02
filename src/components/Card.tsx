@@ -6,7 +6,7 @@ interface Props {
 }
 
 export default function Card({ children, className = '' }: Props) {
-  return <div className={`app-card ${className}`}>{children}</div>;
+  return <div className={`app-card fade-up ${className}`}>{children}</div>;
 }
 
 export function StatCard({
@@ -22,16 +22,32 @@ export function StatCard({
   valueSub?: string;
   tone?: 'green' | 'gold' | 'danger';
 }) {
-  const toneColor =
-    tone === 'danger' ? 'text-danger' : tone === 'gold' ? 'text-gold' : 'text-green';
+  const c = tone === 'danger' ? 'var(--danger)' : tone === 'gold' ? 'var(--gold)' : 'var(--green)';
   return (
-    <div className="bg-card rounded-card shadow-soft border border-line p-3 text-center">
-      <div className="text-xl mb-1" aria-hidden>
+    <div
+      className="flex-1 text-center"
+      style={{
+        borderRadius: 18,
+        background: `rgb(${c} / 0.05)`,
+        borderTop: `3px solid rgb(${c})`,
+        padding: '16px 10px',
+        boxShadow: '0 2px 12px rgba(6,45,35,.06)',
+      }}
+    >
+      <div style={{ fontSize: 30, lineHeight: 1, marginBottom: 6 }} aria-hidden>
         {emoji}
       </div>
-      <div className="text-xs text-muted font-bold mb-1">{label}</div>
-      <div className={`text-base font-black num ${toneColor}`}>{valueMain}</div>
-      {valueSub && <div className="text-xs text-muted font-bold num">{valueSub}</div>}
+      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgb(var(--muted))', marginBottom: 5 }}>
+        {label}
+      </div>
+      <div className="num" style={{ fontSize: 19, fontWeight: 900, color: `rgb(${c})` }}>
+        {valueMain}
+      </div>
+      {valueSub && (
+        <div className="num" style={{ fontSize: 11, fontWeight: 700, color: 'rgb(var(--muted))' }}>
+          {valueSub}
+        </div>
+      )}
     </div>
   );
 }

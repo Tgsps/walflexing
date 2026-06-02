@@ -56,7 +56,7 @@ export default function PinLock({ onUnlock }: { onUnlock: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[80] bg-cream flex flex-col items-center justify-center px-8 safe-top">
-      <div className="w-16 h-16 rounded-2xl bg-green text-white grid place-items-center mb-4">
+      <div className="w-16 h-16 rounded-2xl bg-green text-white grid place-items-center mb-4 glow-green">
         <Lock size={30} />
       </div>
       <h1 className="text-2xl font-black text-green mb-1">التطبيق مقفل</h1>

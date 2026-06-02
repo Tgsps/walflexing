@@ -95,6 +95,13 @@ netlify deploy --prod --dir=dist
 
 ---
 
+### الهوية البصرية — "Hot Virginia"
+ريديزاين فاخر: **زمردي عميق `#062D23` × ذهبي محترق `#C49418` × عاجي دافئ `#F8F4EA`** (لوبي فندق 5 نجوم).
+- تنقّل سفلي عائم (**Pill Island**) — كبسولة متمركزة، التبويب النشط حبّة ذهبية بأيقونة+نص.
+- كروت بحدّ ذهبي **سفلي** + ظلال دافئة، بطاقة هويّة فاخرة بتدرّج وحلقة ذهبية.
+- وضع فاتح/داكن بنفس الهوية، شريط تقدّم متدرّج بتوهّج، نوافذ Bottom-Sheet بمقبض سحب.
+- خط Tajawal، أرقام `tabular-nums`، RTL كامل.
+
 ## التقنيات
 
 React + Vite + TypeScript · Tailwind CSS · react-router-dom · Recharts · lucide-react · vite-plugin-pwa · خط Tajawal.

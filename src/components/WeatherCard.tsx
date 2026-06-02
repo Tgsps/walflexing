@@ -30,7 +30,6 @@ export default function WeatherCard() {
       </Card>
     );
   }
-
   if (!weather) {
     return (
       <Card className="mb-3">
@@ -46,31 +45,33 @@ export default function WeatherCard() {
 
   return (
     <Card className="mb-3">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-3xl">{weatherEmoji(weather.current.code)}</span>
-          <div>
-            <div className="font-black text-green">إسطنبول الآن · {weatherLabel(weather.current.code)}</div>
-            <div className="text-xs text-muted font-bold num">
-              {temp}° · أعلى {Math.round(weather.today.max)}° / أدنى {Math.round(weather.today.min)}°
-            </div>
+      <div className="flex items-center gap-2.5 mb-3">
+        <span style={{ fontSize: 34 }}>{weatherEmoji(weather.current.code)}</span>
+        <div>
+          <div className="font-black text-green" style={{ fontSize: 15 }}>
+            إسطنبول الآن · {weatherLabel(weather.current.code)}
+          </div>
+          <div className="num text-xs font-bold text-muted">
+            {temp}° · أعلى {Math.round(weather.today.max)}° / أدنى {Math.round(weather.today.min)}°
           </div>
         </div>
-        <select
-          value={occasion}
-          onChange={(e) => setOccasion(e.target.value as Occasion)}
-          className="bg-cream/60 border-2 border-line rounded-lg px-2 py-1.5 text-sm font-bold text-green focus:border-gold focus:outline-none"
-        >
-          {OCCASIONS.map((o) => (
-            <option key={o.key} value={o.key}>
-              {o.emoji} {o.label}
-            </option>
-          ))}
-        </select>
       </div>
 
-      <div className="bg-gold-soft/60 rounded-xl p-3">
-        <div className="text-sm font-bold text-green mb-1">👕 لبس مناسب:</div>
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar mb-3 pb-0.5">
+        {OCCASIONS.map((o) => (
+          <button
+            key={o.key}
+            onClick={() => setOccasion(o.key)}
+            className={`chip shrink-0 ${occasion === o.key ? 'bg-green text-white border-green' : ''}`}
+            style={{ fontSize: 12, padding: '6px 12px' }}
+          >
+            {o.emoji} {o.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ background: 'rgb(var(--gold-soft) / 0.6)', borderRadius: 14, padding: 12 }}>
+        <div className="text-[13px] font-bold text-green mb-1">👕 لبس مناسب:</div>
         <div className="font-black text-ink">{outfit.text}</div>
         {outfit.haveItems.length > 0 && (
           <div className="text-xs font-bold text-muted mt-1">من خزانتك: {outfit.haveItems.join(' · ')}</div>

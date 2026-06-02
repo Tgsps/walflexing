@@ -59,9 +59,9 @@ function encodePng(width, height, rgba) {
 }
 
 // ---- drawing ----------------------------------------------------------------
-const GREEN = [14, 77, 60];
-const GREEN_2 = [21, 97, 76];
-const GOLD = [201, 162, 39];
+const GREEN = [6, 45, 35];
+const GREEN_2 = [10, 65, 50];
+const GOLD = [196, 148, 24];
 
 function mix(a, b, t) {
   return [

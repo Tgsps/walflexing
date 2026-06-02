@@ -3,6 +3,11 @@ dist
 dist-ssr
 *.local
 .DS_Store
+
+# temp design-system handoff working dir + screenshot artifacts
+.design_tmp/
+shot-*.png
+shot-*.mjs
 .vscode/*
 !.vscode/extensions.json
 
