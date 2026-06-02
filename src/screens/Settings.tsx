@@ -127,60 +127,11 @@ export default function Settings() {
         </div>
       </Card>
 
-      {/* price list */}
-      <Card className="mb-3">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-black text-green">{t('settings.pricesCard')}</h2>
-          <button
-            onClick={() => update((d) => { d.prices.unshift({ id: uid('p'), emoji: '🛒', name: t('settings.newProduct'), unit: t('settings.unit'), priceTRY: 0 }); })}
-            className="text-sm font-bold text-green flex items-center gap-1 border-2 border-gold/70 rounded-lg px-2 py-1"
-          >
-            <Plus size={15} /> {t('settings.product')}
-          </button>
-        </div>
-        <p className="text-xs text-muted font-bold mb-3">{t('settings.pricesNote')}</p>
-        <ul className="space-y-2">
-          {data.prices.map((p) => (
-            <li key={p.id} className="flex items-center gap-2">
-              <input
-                value={p.emoji}
-                onChange={(e) => update((d) => { const it = d.prices.find((x) => x.id === p.id); if (it) it.emoji = e.target.value; })}
-                className="w-10 text-center text-xl bg-cream/60 border-2 border-line rounded-lg py-1.5 focus:border-gold focus:outline-none"
-                aria-label="emoji"
-              />
-              <div className="flex-1 min-w-0">
-                <input
-                  value={tPriceName(p.id, t, p.name)}
-                  onChange={(e) => update((d) => { const it = d.prices.find((x) => x.id === p.id); if (it) it.name = e.target.value; })}
-                  className="w-full bg-transparent font-bold text-ink focus:outline-none truncate"
-                />
-                <input
-                  value={tPriceUnit(p.id, t, p.unit)}
-                  onChange={(e) => update((d) => { const it = d.prices.find((x) => x.id === p.id); if (it) it.unit = e.target.value; })}
-                  className="w-full bg-transparent text-xs text-muted font-bold focus:outline-none"
-                />
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  value={p.priceTRY || ''}
-                  onChange={(e) => update((d) => { const it = d.prices.find((x) => x.id === p.id); if (it) it.priceTRY = Number(e.target.value) || 0; })}
-                  className="w-16 bg-cream/60 border-2 border-line rounded-lg px-2 py-1.5 text-end font-black text-green num focus:border-gold focus:outline-none"
-                />
-                <span className="text-muted font-black text-sm">₺</span>
-              </div>
-              <button
-                onClick={() => update((d) => { d.prices = d.prices.filter((x) => x.id !== p.id); })}
-                className="w-7 h-7 grid place-items-center rounded-lg text-danger active:scale-95 shrink-0"
-                aria-label={t('common.delete')}
-              >
-                <Trash2 size={16} />
-              </button>
-            </li>
-          ))}
-        </ul>
-      </Card>
+      {/* price list → dedicated page */}
+      <Link to="/prices" className="mb-3 app-card flex items-center justify-between active:scale-[.99] transition">
+        <span className="font-black text-green flex items-center gap-2">🏷️ {t('settings.pricesCard')}</span>
+        <ChevronLeft size={20} className="text-muted ltr:rotate-180" />
+      </Link>
 
       {/* backup */}
       <Card className="mb-3">
@@ -297,6 +248,23 @@ function ProfileCard() {
             e.target.value = '';
           }}
         />
+      </div>
+
+      <div className="mt-3">
+        <span className="text-xs font-bold text-muted uppercase tracking-wide">{t('gender.label')}</span>
+        <div className="grid grid-cols-2 gap-2 mt-1">
+          {(['male', 'female'] as const).map((g) => (
+            <button
+              key={g}
+              onClick={() => update((d) => { d.settings.gender = g; })}
+              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold border-2 transition ${
+                data.settings.gender === g ? 'bg-green text-white border-green' : 'border-line text-muted'
+              }`}
+            >
+              <span>{g === 'male' ? '👨' : '👩'}</span> {t(`gender.${g}`)}
+            </button>
+          ))}
+        </div>
       </div>
     </Card>
   );

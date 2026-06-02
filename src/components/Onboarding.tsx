@@ -5,13 +5,17 @@ import { useApp } from '../state/AppContext';
 import { fmtTRY, uid } from '../lib/format';
 import { fileToAvatar } from '../lib/image';
 import { tFixedName } from '../i18n/content';
+import type { Gender } from '../types';
 import LanguagePicker from './LanguagePicker';
+
+const LAST = 5; // 1=gender · 2=name · 3=salary · 4=bills · 5=gym
 
 export default function Onboarding() {
   const { t } = useTranslation();
   const { data, update } = useApp();
   const [step, setStep] = useState(0); // 0 = language picker
 
+  const [gender, setGender] = useState<Gender>(data.settings.gender || 'male');
   const [name, setName] = useState(data.settings.userName || '');
   const [avatar, setAvatar] = useState<string | undefined>(data.settings.userAvatar);
   const [salary, setSalary] = useState(String(data.settings.salaryUSD || 1000));
@@ -23,6 +27,7 @@ export default function Onboarding() {
 
   const finish = () => {
     update((d) => {
+      d.settings.gender = gender;
       d.settings.userName = name.trim();
       d.settings.userAvatar = avatar;
       d.settings.salaryUSD = Number(salary) || 0;
@@ -44,7 +49,7 @@ export default function Onboarding() {
     });
   };
 
-  const next = () => setStep((s) => Math.min(4, s + 1));
+  const next = () => setStep((s) => Math.min(LAST, s + 1));
   const back = () => setStep((s) => Math.max(1, s - 1));
 
   if (step === 0) return <LanguagePicker onConfirm={() => setStep(1)} />;
@@ -53,7 +58,7 @@ export default function Onboarding() {
     <div className="fixed inset-0 z-[70] bg-cream overflow-y-auto">
       <div className="max-w-[480px] mx-auto px-5 py-8 safe-top min-h-full flex flex-col">
         <div className="flex items-center justify-center gap-2 mb-6">
-          {[1, 2, 3, 4].map((i) => (
+          {[1, 2, 3, 4, 5].map((i) => (
             <span
               key={i}
               className={`h-2 rounded-full transition-all ${
@@ -65,6 +70,25 @@ export default function Onboarding() {
 
         <div className="flex-1">
           {step === 1 && (
+            <Step title={t('gender.title')} subtitle="">
+              <div className="grid grid-cols-2 gap-3">
+                {(['male', 'female'] as Gender[]).map((g) => (
+                  <button
+                    key={g}
+                    onClick={() => setGender(g)}
+                    className={`flex flex-col items-center gap-2 py-8 rounded-2xl border-2 transition active:scale-[.98] ${
+                      gender === g ? 'bg-green text-white border-green shadow-soft' : 'bg-card border-line text-ink'
+                    }`}
+                  >
+                    <span style={{ fontSize: 48 }}>{g === 'male' ? '👨' : '👩'}</span>
+                    <span className="font-black text-lg">{t(`gender.${g}`)}</span>
+                  </button>
+                ))}
+              </div>
+            </Step>
+          )}
+
+          {step === 2 && (
             <Step title={t('onboarding.s1Title')} subtitle={t('onboarding.s1Sub')}>
               <div className="flex flex-col items-center gap-3 mb-4">
                 <label className="cursor-pointer">
@@ -103,7 +127,7 @@ export default function Onboarding() {
             </Step>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <Step title={t('onboarding.s2Title')} subtitle={t('onboarding.s2Sub')}>
               <Labeled label={t('onboarding.salaryUSD')}>
                 <input type="number" inputMode="decimal" value={salary} onChange={(e) => setSalary(e.target.value)} className="field num" />
@@ -118,7 +142,7 @@ export default function Onboarding() {
             </Step>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <Step title={t('onboarding.s3Title')} subtitle={t('onboarding.s3Sub')}>
               <ul className="space-y-2">
                 {bills.map((b, i) => (
@@ -151,7 +175,7 @@ export default function Onboarding() {
             </Step>
           )}
 
-          {step === 4 && (
+          {step === 5 && (
             <Step title={t('onboarding.s4Title')} subtitle={t('onboarding.s4Sub')}>
               <div className="grid grid-cols-2 gap-2 mb-3">
                 <button
@@ -188,7 +212,7 @@ export default function Onboarding() {
               <ChevronRight size={18} className="rtl:rotate-0 ltr:rotate-180" /> {t('common.back')}
             </button>
           )}
-          {step < 4 ? (
+          {step < LAST ? (
             <button onClick={next} className="btn-primary flex-1 flex items-center justify-center gap-1">
               {t('common.next')} <ChevronLeft size={18} className="rtl:rotate-0 ltr:rotate-180" />
             </button>

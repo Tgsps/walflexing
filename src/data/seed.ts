@@ -5,6 +5,7 @@ import type {
   MealDay,
   MealWeek,
   OwnedItem,
+  PrayerData,
   PriceItem,
   WishlistItem,
   WorkoutDay,
@@ -227,6 +228,7 @@ export function createSeedData(): AppData {
       exchangeRate: 45.8,
       monthlyClothingBudgetTRY: 0,
       language: 'en',
+      gender: 'male',
       onboardingDone: false,
       userName: '',
       pinEnabled: false,
@@ -239,12 +241,29 @@ export function createSeedData(): AppData {
     shopping: { weeks: [1, 2, 3, 4].map((week) => ({ week, checkedIds: [] })) },
     meals: { weeks: buildMeals() },
     workout: { schedule: WORKOUT_SCHEDULE, log: [], weightLog: [] },
-    notes: ['اكتب ملاحظة سريعة هنا… 📝'],
-    wardrobe: { owned: WARDROBE_OWNED, wishlist: WARDROBE_WISHLIST },
+    notes: [],
+    // كل مستخدم يبني خزانته من الصفر
+    wardrobe: { owned: [], wishlist: [] },
     monthlyHistory: [],
     medicines: [
       { id: 'm_vitd', name: 'فيتامين D', emoji: '☀️', time: '09:00', enabled: true },
       { id: 'm_omega', name: 'أوميغا 3', emoji: '🐟', time: '14:00', enabled: true },
     ],
+    prayer: freshPrayer(),
+  };
+}
+
+export function freshPrayer(): PrayerData {
+  return {
+    timings: null,
+    timingsFetchedAt: null,
+    morningAdhkarDone: Array(10).fill(false),
+    eveningAdhkarDone: Array(10).fill(false),
+    morningAdhkarCounts: Array(10).fill(0),
+    eveningAdhkarCounts: Array(10).fill(0),
+    lastResetDate: '',
+    notifyMorning: true,
+    notifyEvening: true,
+    notifyFriday: true,
   };
 }

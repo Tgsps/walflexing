@@ -1,15 +1,43 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MapPin } from 'lucide-react';
 import { useApp } from '../state/AppContext';
-import { M2, metroFrequency, metroRunning } from '../data/metro';
+import { M2, metroFrequency, metroRunning, nearestStation, type MetroStation } from '../data/metro';
 import Card from './Card';
+
+type GeoState = 'locating' | 'ok' | 'denied';
 
 export default function MetroCard() {
   const { t, i18n } = useTranslation();
   const { data, update } = useApp();
   const ar = i18n.language === 'ar';
-  const station = data.settings.metroStation;
   const running = metroRunning();
   const freqKey = metroFrequency();
+
+  const [geo, setGeo] = useState<GeoState>('locating');
+  const [nearest, setNearest] = useState<MetroStation | null>(null);
+
+  useEffect(() => {
+    if (!('geolocation' in navigator)) {
+      setGeo('denied');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const s = nearestStation(pos.coords.latitude, pos.coords.longitude);
+        setNearest(s);
+        setGeo('ok');
+        update((d) => {
+          d.settings.metroStation = s.ar;
+        });
+      },
+      () => setGeo('denied'),
+      { timeout: 8000, maximumAge: 5 * 60 * 1000 },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const label = (s: MetroStation) => (ar ? s.ar : s.tr);
 
   return (
     <Card className="mb-3">
@@ -17,14 +45,7 @@ export default function MetroCard() {
         <div className="flex items-center gap-2">
           <span
             className="grid place-items-center text-white font-black"
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 9999,
-              fontSize: 12,
-              background: '#009640',
-              boxShadow: '0 0 0 2px rgb(var(--gold)), 0 2px 8px rgba(6,45,35,.2)',
-            }}
+            style={{ width: 30, height: 30, borderRadius: 9999, fontSize: 12, background: '#009640', boxShadow: '0 0 0 2px rgb(var(--gold)), 0 2px 8px rgba(6,45,35,.2)' }}
           >
             M2
           </span>
@@ -42,11 +63,7 @@ export default function MetroCard() {
           [t('metro.firstTrain'), M2.firstTrain],
           [t('metro.lastTrain'), M2.lastTrain],
         ].map(([l, v]) => (
-          <div
-            key={v}
-            className="flex-1 text-center"
-            style={{ background: 'rgb(var(--cream) / 0.6)', borderRadius: 14, padding: 10 }}
-          >
+          <div key={v} className="flex-1 text-center" style={{ background: 'rgb(var(--cream) / 0.6)', borderRadius: 14, padding: 10 }}>
             <div className="text-xs font-bold text-muted">{l}</div>
             <div className="num font-black text-green">{v}</div>
           </div>
@@ -55,25 +72,36 @@ export default function MetroCard() {
 
       <div className="text-[13px] font-bold text-muted mb-2.5">🚇 {t(`metro.${freqKey}`)}</div>
 
-      <label className="block">
-        <span className="text-xs font-bold text-muted uppercase tracking-wide">{t('metro.myStation')}</span>
-        <select
-          value={station ?? ''}
-          onChange={(e) =>
-            update((d) => {
-              d.settings.metroStation = e.target.value || undefined;
-            })
-          }
-          className="field mt-1"
-        >
-          <option value="">{t('metro.pickStation')}</option>
-          {M2.stations.map((s) => (
-            <option key={s.id} value={s.ar}>
-              {ar ? `${s.ar} — ${s.tr}` : s.tr}
-            </option>
-          ))}
-        </select>
-      </label>
+      {geo === 'locating' && <div className="text-[13px] font-bold text-muted">📍 {t('metroGps.locating')}</div>}
+
+      {geo === 'ok' && nearest && (
+        <div className="flex items-center gap-2 bg-gold/10 border border-gold/40 rounded-xl px-3 py-2.5">
+          <MapPin size={18} className="text-gold shrink-0" />
+          <span className="font-black text-green">{t('metroGps.nearest', { station: label(nearest) })}</span>
+        </div>
+      )}
+
+      {geo === 'denied' && (
+        <label className="block">
+          <span className="text-xs font-bold text-muted uppercase tracking-wide">{t('metroGps.denied')}</span>
+          <select
+            value={data.settings.metroStation ?? ''}
+            onChange={(e) =>
+              update((d) => {
+                d.settings.metroStation = e.target.value || undefined;
+              })
+            }
+            className="field mt-1"
+          >
+            <option value="">{t('metro.pickStation')}</option>
+            {M2.stations.map((s) => (
+              <option key={s.id} value={s.ar}>
+                {ar ? `${s.ar} — ${s.tr}` : s.tr}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
     </Card>
   );
 }

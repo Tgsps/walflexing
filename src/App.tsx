@@ -13,6 +13,8 @@ import Food from './screens/Food';
 import Workouts from './screens/Workouts';
 import Clothes from './screens/Clothes';
 import Medicines from './screens/Medicines';
+import Prices from './screens/Prices';
+import Prayer from './screens/Prayer';
 import Settings from './screens/Settings';
 
 const LOCK_MS = 5 * 60 * 1000;
@@ -73,6 +75,8 @@ export default function App() {
           <Route path="/workouts" element={<Workouts />} />
           <Route path="/clothes" element={<Clothes />} />
           <Route path="/medicines" element={<Medicines />} />
+          <Route path="/prices" element={<Prices />} />
+          <Route path="/prayer" element={<Prayer />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Dashboard />} />
         </Routes>

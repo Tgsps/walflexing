@@ -11,6 +11,8 @@ import FxCard from '../components/FxCard';
 import WeatherCard from '../components/WeatherCard';
 import MetroCard from '../components/MetroCard';
 import WordCard from '../components/WordCard';
+import QuranCard from '../components/QuranCard';
+import PrayerEntry from '../components/PrayerEntry';
 import { computeTotals, progressLevel, upcomingBills, dailyAllowance, monthKey, PROGRESS_COLOR } from '../lib/calc';
 import { fmtTRY, fmtUSD, toUSD } from '../lib/format';
 import { tFixedName } from '../i18n/content';
@@ -42,13 +44,6 @@ export default function Dashboard() {
     <div>
       <IdentityCard />
 
-      {bills.length > 0 && <BillReminders bills={bills} />}
-
-      <FxCard />
-      <WeatherCard />
-      <MetroCard />
-      <WordCard />
-
       {/* remaining balance + progress */}
       <Card className="mb-3">
         <div className="flex items-end justify-between mb-2">
@@ -69,6 +64,16 @@ export default function Dashboard() {
           {t('dash.spentOf', { spent: fmtTRY(tot.spent), salary: fmtTRY(tot.salaryTRY) })}
         </div>
       </Card>
+
+      <FxCard />
+      <WeatherCard />
+      <MetroCard />
+      <WordCard />
+      <QuranCard />
+      <PrayerEntry />
+      <QuickNotes />
+
+      {bills.length > 0 && <BillReminders bills={bills} />}
 
       {/* daily allowance */}
       <div
@@ -148,9 +153,6 @@ export default function Dashboard() {
           </div>
         )}
       </Card>
-
-      {/* quick notes */}
-      <QuickNotes />
 
       <Link to="/expenses" className="mt-3 block text-center text-sm font-bold text-green underline underline-offset-4">
         {t('dash.manageExpenses')}

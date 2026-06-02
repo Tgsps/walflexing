@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { RefreshCw, Loader2 } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import { getRate, type FxData } from '../lib/fx';
 import Card from './Card';
@@ -9,26 +10,44 @@ export default function FxCard() {
   const { data, update } = useApp();
   const [fx, setFx] = useState<FxData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const apply = (d: FxData) => {
+    setFx(d);
+    if (d.fetchedAt !== data.settings.lastRateFetchedAt) {
+      update((s) => {
+        s.settings.previousRate = s.settings.lastRate ?? d.rate;
+        s.settings.lastRate = d.rate;
+        s.settings.lastRateFetchedAt = d.fetchedAt;
+      });
+    }
+  };
 
   useEffect(() => {
     let alive = true;
     getRate().then((d) => {
       if (!alive) return;
-      setFx(d);
+      if (d) apply(d);
       setLoading(false);
-      if (d && d.fetchedAt !== data.settings.lastRateFetchedAt) {
-        update((s) => {
-          s.settings.previousRate = s.settings.lastRate ?? d.rate;
-          s.settings.lastRate = d.rate;
-          s.settings.lastRateFetchedAt = d.fetchedAt;
-        });
-      }
     });
     return () => {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const refresh = async () => {
+    setRefreshing(true);
+    const d = await getRate(true);
+    if (d) apply(d);
+    setRefreshing(false);
+  };
+
+  const useThisRate = () =>
+    fx &&
+    update((d) => {
+      d.settings.exchangeRate = Math.round(fx.rate * 100) / 100;
+    });
 
   if (loading) {
     return (
@@ -47,21 +66,19 @@ export default function FxCard() {
 
   const prev = data.settings.previousRate;
   const rose = prev != null && fx.rate > prev;
+  const fell = prev != null && fx.rate < prev;
   const diff = prev != null ? Math.abs(fx.rate - prev) : 0;
 
-  const stale = Date.now() - new Date(fx.fetchedAt).getTime() > 24 * 3600 * 1000;
+  const applied = Math.round(fx.rate * 100) / 100 === data.settings.exchangeRate;
+  const statusText = prev == null ? '' : rose ? t('fxStatus.up') : fell ? t('fxStatus.down') : t('fxStatus.stable');
+  const statusColor = rose ? 'rgb(var(--danger))' : fell ? 'rgb(var(--ok))' : 'rgb(var(--muted))';
+
   const when = new Date(fx.fetchedAt);
+  const stale = Date.now() - when.getTime() > 24 * 3600 * 1000;
   const isToday = when.toDateString() === new Date().toDateString();
   const whenLabel = isToday
-    ? t('fx.todayAt', {
-        time: `${String(when.getHours()).padStart(2, '0')}:${String(when.getMinutes()).padStart(2, '0')}`,
-      })
+    ? t('fx.todayAt', { time: `${String(when.getHours()).padStart(2, '0')}:${String(when.getMinutes()).padStart(2, '0')}` })
     : `${when.getDate()}/${when.getMonth() + 1}`;
-
-  const useThisRate = () =>
-    update((d) => {
-      d.settings.exchangeRate = Math.round(fx.rate * 100) / 100;
-    });
 
   const bars = [7, 11, 8, 12, 9];
 
@@ -72,22 +89,30 @@ export default function FxCard() {
           💱 {t('fx.title')}
         </span>
         <button
-          onClick={useThisRate}
-          className="chip"
+          onClick={refreshing ? undefined : applied ? refresh : useThisRate}
+          className="chip flex items-center gap-1"
           style={{ padding: '5px 12px', fontSize: 12, borderColor: 'rgb(var(--gold))', color: 'rgb(var(--green))' }}
         >
-          {t('fx.useIt')}
+          {refreshing ? (
+            <>
+              <Loader2 size={13} className="animate-spin" /> {t('fxStatus.updating')}
+            </>
+          ) : applied ? (
+            <>
+              <RefreshCw size={13} /> {t('fxStatus.refresh')}
+            </>
+          ) : (
+            t('fx.useIt')
+          )}
         </button>
       </div>
+
       <div className="flex items-end gap-2.5">
         <span className="num font-black text-ink" style={{ fontSize: 28 }}>
           $1 = {fx.rate.toFixed(2)} ₺
         </span>
         {prev != null && diff > 0 && (
-          <span
-            className="num font-black flex items-center gap-0.5"
-            style={{ fontSize: 15, marginBottom: 4, color: rose ? 'rgb(var(--danger))' : 'rgb(var(--ok))' }}
-          >
+          <span className="num font-black flex items-center gap-0.5" style={{ fontSize: 15, marginBottom: 4, color: statusColor }}>
             {rose ? '▲' : '▼'} {diff.toFixed(2)}
           </span>
         )}
@@ -97,10 +122,15 @@ export default function FxCard() {
           ))}
         </div>
       </div>
-      <div className="num font-bold text-muted mt-1.5" style={{ fontSize: 11 }}>
+
+      {statusText && (
+        <div className="font-black mt-1" style={{ fontSize: 13, color: statusColor }}>
+          {statusText}
+        </div>
+      )}
+      <div className="num font-bold text-muted mt-0.5" style={{ fontSize: 11 }}>
         {stale ? t('fx.offline') : ''}
         {whenLabel}
-        {prev != null && diff > 0 && (rose ? t('fx.up') : t('fx.down'))}
       </div>
     </Card>
   );

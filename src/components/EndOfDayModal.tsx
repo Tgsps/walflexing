@@ -6,8 +6,8 @@ import { computeTotals, isToday, isSameMonth } from '../lib/calc';
 import { fmtTRY, todayISODate } from '../lib/format';
 import { JS_DAY_TO_AR } from '../data/seed';
 import { getWeather, weatherEmoji, tempBand, isRainy, type WeatherData } from '../lib/weather';
-import { suggestOutfit } from '../data/outfits';
-import { tWeatherCond } from '../i18n/content';
+import { pickOutfit } from '../data/outfits';
+import { tWeatherCond, tOwnedName } from '../i18n/content';
 
 function shouldAutoOpen(lastDismissed: string | undefined): boolean {
   const today = todayISODate();
@@ -73,9 +73,16 @@ export default function EndOfDayModal() {
 
   let tomorrowOutfit = '';
   if (weather) {
-    const band = tempBand(weather.tomorrow.max);
-    const rain = isRainy(weather.tomorrow.code);
-    tomorrowOutfit = t(`outfits.${suggestOutfit(band, rain, 'casual', data.wardrobe.owned).textKey}`);
+    const pick = pickOutfit(data.wardrobe.owned, tempBand(weather.tomorrow.max), isRainy(weather.tomorrow.code));
+    if (!pick.empty) {
+      tomorrowOutfit = pick.ids
+        .map((id) => {
+          const it = data.wardrobe.owned.find((o) => o.id === id);
+          return it ? tOwnedName(id, t, it.name) : '';
+        })
+        .filter(Boolean)
+        .join(' · ');
+    }
   }
 
   return (

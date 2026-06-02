@@ -9,6 +9,7 @@ import { JS_DAY_TO_AR } from '../data/seed';
 import { currentWeekDates } from '../lib/calc';
 import { todayISODate, fmtFullDate } from '../lib/format';
 import { tFocus, tDayName, tTodayName } from '../i18n/content';
+import { dailyQuote, weeklyQuote, monthlyQuote } from '../data/quotes';
 
 type Tab = 'schedule' | 'weight';
 
@@ -41,6 +42,29 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     >
       {children}
     </button>
+  );
+}
+
+function QuotesSection() {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as 'en' | 'ar' | 'tr';
+  const rows: [string, string, { en: string; ar: string; tr: string }][] = [
+    ['🔥', t('quotes.daily'), dailyQuote()],
+    ['📅', t('quotes.weekly'), weeklyQuote()],
+    ['🗓️', t('quotes.monthly'), monthlyQuote()],
+  ];
+  return (
+    <div className="space-y-2 mb-4">
+      {rows.map(([emoji, label, q]) => (
+        <div key={label} className="bg-card rounded-2xl border-b-2 border-gold/60 shadow-soft p-3 flex items-center gap-3 fade-up">
+          <span className="text-2xl shrink-0">{emoji}</span>
+          <div className="min-w-0">
+            <div className="text-[11px] font-bold text-muted uppercase tracking-wide">{label}</div>
+            <div className="font-black text-green text-sm">{q[lang] ?? q.en}</div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -150,6 +174,8 @@ function ScheduleTab() {
           <div className="text-xs font-bold text-muted">{t('workouts.streakSub')}</div>
         </Card>
       </div>
+
+      <QuotesSection />
 
       <h3 className="font-black text-green px-1 mb-2">{t('workouts.weekly')}</h3>
       <ul className="space-y-2">

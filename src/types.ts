@@ -2,12 +2,14 @@
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type Language = 'en' | 'ar' | 'tr';
+export type Gender = 'male' | 'female';
 
 export interface Settings {
   salaryUSD: number;
   exchangeRate: number; // ₺ per 1 $
   monthlyClothingBudgetTRY: number; // ميزانية الملابس الشهرية (افتراضي 0)
   language: Language; // واجهة التطبيق (افتراضي en)
+  gender: Gender; // يؤثّر على اقتراح اللبس
   // --- المرحلة الثالثة (كلها إضافية) ---
   onboardingDone: boolean;
   userName: string;
@@ -168,6 +170,28 @@ export interface Medicine {
   lastTakenDate?: string; // yyyy-mm-dd => أُخذت اليوم لو == تاريخ اليوم
 }
 
+export interface PrayerTimings {
+  Fajr: string;
+  Sunrise: string;
+  Dhuhr: string;
+  Asr: string;
+  Maghrib: string;
+  Isha: string;
+}
+
+export interface PrayerData {
+  timings: PrayerTimings | null;
+  timingsFetchedAt: string | null;
+  morningAdhkarDone: boolean[]; // length 10, reset daily
+  eveningAdhkarDone: boolean[]; // length 10, reset daily
+  morningAdhkarCounts: number[];
+  eveningAdhkarCounts: number[];
+  lastResetDate: string;
+  notifyMorning: boolean;
+  notifyEvening: boolean;
+  notifyFriday: boolean;
+}
+
 export interface AppData {
   version: number;
   settings: Settings;
@@ -182,4 +206,5 @@ export interface AppData {
   wardrobe: Wardrobe;
   monthlyHistory: MonthlySnapshot[];
   medicines: Medicine[];
+  prayer: PrayerData;
 }
