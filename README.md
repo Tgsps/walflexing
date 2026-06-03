@@ -1,127 +1,129 @@
-# 📱 عازب في إسطنبول — Bachelor in Istanbul
+# Walflex
 
-تطبيق ويب (PWA) قابل للتثبيت على الآيفون لإدارة **الراتب والمصاريف والأكل والتمارين** لشخص واحد يعيش في إسطنبول.
+**Your life. Your wallet. Your Istanbul.**
 
-- 🌙 عربي بالكامل + RTL
-- 💱 الليرة التركية (₺) + الدولار ($) عبر سعر صرف قابل للتعديل (افتراضي 45.8)
-- 📴 يعمل بدون إنترنت 100% — كل البيانات محفوظة محلياً (`localStorage`)، بدون سيرفر، بدون تسجيل دخول، بدون أي API خارجي
-- ✏️ الأسعار تُعدَّل يدوياً فقط من شاشة الإعدادات
+An installable, **offline-first PWA** for one young man living in Istanbul to manage **salary, expenses, food, workouts, clothes, medication, prices, and prayer** — all in one place, on the phone, with no account and no internet required.
 
----
-
-## التشغيل محلياً
-
-```bash
-npm install      # تثبيت المكتبات (مرة واحدة)
-npm run dev      # تشغيل خادم التطوير
-```
-
-ثم افتح الرابط الذي يظهر (عادة `http://localhost:5173`).
-
-أوامر أخرى:
-
-```bash
-npm run build    # بناء نسخة الإنتاج إلى مجلد dist/
-npm run preview  # معاينة نسخة الإنتاج محلياً
-npm run typecheck# فحص أنواع TypeScript
-npm run icons    # توليد أيقونات الـ PWA يدوياً (يتم تلقائياً قبل dev/build)
-```
-
-> أيقونات الـ PWA تُولَّد تلقائياً عبر `scripts/generate-icons.mjs` (بدون أي اعتماديات خارجية) قبل كل `dev` و `build`.
+- 🌍 **Three languages** — English (default) · العربية · Türkçe (full RTL for Arabic)
+- 💱 Turkish Lira (₺) + US Dollar ($), exchange rate editable by hand (or auto via a keyless API)
+- 📴 **Works 100% offline** — all data lives in `localStorage`. No backend, no login.
+- 🎬 **Intro video** plays full-screen every time the app opens
+- ✏️ Prices are edited manually from the Prices screen
 
 ---
 
-## النشر على Netlify
+## Run locally
 
-الإعدادات جاهزة في `netlify.toml`:
+```bash
+npm install      # one time
+npm run dev      # start the dev server (usually http://localhost:5173)
+```
+
+Other commands:
+
+```bash
+npm run build      # production build → dist/
+npm run preview    # preview the production build locally
+npm run typecheck  # TypeScript type-check
+```
+
+> PWA icons (`public/pwa-192x192.png`, `pwa-512x512.png`, `maskable-512x512.png`, `apple-touch-icon.png`) are committed static assets generated from `public/logo.svg`. The favicon is `public/favicon.svg`.
+
+---
+
+## Branding & intro video
+
+- **Logo:** `public/logo.svg` — gold suspension bridge + white "W" over a gold wallet on emerald green. Used in the navbar, language picker, PWA icons, and favicon.
+- **Intro splash:** `src/components/IntroSplash.tsx` plays `public/intro.mp4` full-screen on **every** open (state is in-memory only, so a refresh or relaunch replays it). It autoplays muted + `playsInline` (iOS-safe), `object-fit: cover`, no controls, no skip button. The Walflex logo fades in over the last ~1s, then the video fades out (0.5s) and the app appears. If autoplay is blocked, the video errors, or it stalls, the splash skips gracefully to the app.
+
+> To swap the video, just replace `public/intro.mp4` — it is referenced by path (`src="/intro.mp4"`), not imported.
+
+---
+
+## Deploy to Netlify
+
+Settings are ready in `netlify.toml`:
 
 - **Build command:** `npm run build`
 - **Publish directory:** `dist`
-- إعادة التوجيه للـ SPA مضبوطة (`public/_redirects` + `netlify.toml`) ليعمل react-router عند تحديث الصفحة.
+- SPA redirects are configured (`public/_redirects` + `netlify.toml`) so react-router works on refresh.
 
-### طريقتان:
+**Via Git (easiest):** push to GitHub, then in Netlify choose *Add new site → Import from Git* and pick the repo — it auto-detects the settings.
 
-**أ) عبر الموقع (الأسهل):** ادفع المشروع إلى GitHub، ثم في Netlify اختر *Add new site → Import from Git* وحدّد المستودع. سيلتقط الإعدادات تلقائياً.
-
-**ب) عبر السطر (Netlify CLI):**
+**Via CLI:**
 ```bash
 npm i -g netlify-cli
 npm run build
 netlify deploy --prod --dir=dist
 ```
 
-> ⚠️ مهم: الـ PWA (التثبيت وخدمة الـ Service Worker) يشتغل فقط على **HTTPS** — وهذا متوفّر تلقائياً على Netlify.
+> ⚠️ PWA install + service worker only work over **HTTPS** — provided automatically by Netlify.
 
 ---
 
-## التثبيت على الآيفون 📲
+## Install on iPhone 📲
 
-1. افتح رابط الموقع (المنشور على Netlify) من متصفّح **Safari** — لازم Safari تحديداً.
-2. اضغط زر **المشاركة** (المربّع مع السهم للأعلى) في أسفل الشاشة.
-3. اختر **«إضافة إلى الشاشة الرئيسية» (Add to Home Screen)**.
-4. اضغط **«إضافة»** — وبتطلع أيقونة التطبيق على شاشتك الرئيسية.
-5. افتحه من الأيقونة — بيشتغل ملء الشاشة وبدون إنترنت.
+1. Open the published URL in **Safari** (Safari specifically).
+2. Tap the **Share** button (square with an up-arrow).
+3. Choose **Add to Home Screen**.
+4. Tap **Add** — the Walflex icon appears on your home screen.
+5. Open it from the icon — it runs full-screen and offline.
 
-> التطبيق نفسه يعرض هذا الشرح تلقائياً أول مرة، وتقدر ترجع له من **الإعدادات → طريقة التثبيت على الآيفون**.
+> The app shows this guide automatically the first time, and it's always available from **Settings → How to install on iPhone**.
 
 ---
 
-## الشاشات
+## Screens
 
-| الشاشة | الوظيفة |
+| Screen | What it does |
 |---|---|
-| 🏠 الرئيسية | الراتب بالدولار والليرة، الرصيد المتبقّي، شريط تقدّم ملوّن، 3 بطاقات (ثابتة/مشتريات/متوقّعة)، دائرة توزيع، **تذكيرات الفواتير**، **حاسبة اليوم** (كم تقدر تصرف يومياً)، و**ملاحظات سريعة** |
-| 💸 المصاريف | الثابتة (+ بند مخصّص) · المتوقّعة (سجل سريع بالفئات مع فلتر اليوم/الأسبوع/الشهر) · **مقارنة الأشهر** (هذا الشهر مقابل السابق بأسهم ملوّنة + «صوّر الشهر») |
-| 🍽️ الأكل | مشتريات الأسبوع (1–4) مع checklist يحسب «صرفت على المشتريات» · خطة الوجبات (فطور/غدا/عشا) مع زر «الوصفة» |
-| 🏋️ التمارين | الجدول الأسبوعي (إبراز تمرين اليوم، مؤشر الالتزام، streak) · **تتبّع الوزن** (سجل + رسم بياني للاتجاه) |
-| 👔 الملابس | **خزانتي** (القطع المملوكة بالفئات والحالة) · **قائمة الشراء** (بالأولوية + «اشتريتها» تنقلها للخزانة وتحسب سعرها) · متاجر مقترحة · ميزانية ملابس شهرية |
-| 💊 الأدوية | (شاشة تُفتح من الإعدادات) قائمة أدوية/فيتامينات بمواعيد + checkbox «أخذتها اليوم» + إشعارات تذكير (تشتغل عند تثبيت PWA) |
-| ⚙️ الإعدادات | الملف الشخصي (اسم + صورة)، **المظهر فاتح/داكن/تلقائي**، **قفل PIN + بصمة**، الراتب، سعر الصرف، ميزانية الملابس، جدول الأسعار، تصدير/استيراد JSON، وتصفير لشهر جديد |
-
-### إضافات المرحلة الثالثة
-- **معالج إعداد أول مرة** (الاسم/الصورة → الراتب → الفواتير → الجيم) يظهر مرة واحدة فقط.
-- **بطاقة هويّة** أعلى الرئيسية (اسم + صورة + راتب + شريط تقدّم).
-- **قفل PIN** (4 أرقام، SHA-256، محلي) + **Face ID/Touch ID** اختياري، يقفل بعد 5 دقائق بالخلفية.
-- **وضع داكن** بنفس الهوية الخضراء/الذهبية.
-- **بطاقة طقس إسطنبول** + اقتراح لبس من خزانتك حسب الجو والمناسبة (Open-Meteo).
-- **بطاقة مترو M2** (أول/آخر مترو + التردد + اختيار محطتك من 15 محطة).
-- **كلمة تركية لليوم** (تركي + عربي + نطق، 6 فئات).
-- **سعر صرف يومي** (Frankfurter) مع سهم وارتفاع/نزول وتخزين أوفلاين.
-- **ملخّص نهاية اليوم** (صرف اليوم + المتبقّي + تمرين + فيتامينات + طقس بكرا).
-
-> 🌐 ملاحظة: ميزتا الطقس وسعر الصرف تستخدمان APIs مجانية بدون مفتاح (Open-Meteo و Frankfurter)، تُجلب مرة وتُخزّن محلياً، وترجع لآخر قيمة محفوظة بدون إنترنت. باقي التطبيق يعمل أوفلاين بالكامل. الإشعارات تشتغل بأفضل شكل بعد تثبيت التطبيق كـ PWA.
-
-البيانات الأولية (خطة 4 أسابيع، 17 وصفة، قائمة المشتريات الكاملة بالأسعار) مستخرجة من ملف **«خطة الأكل والميزانية · إسطنبول»** وكلها قابلة للتعديل داخل التطبيق.
+| 🏠 Dashboard | Salary in $/₺, remaining balance, progress bar, three cards (fixed / purchases / expected), donut breakdown, bill reminders, daily-spend calculator, quick notes, identity card, weather + outfit, M2 metro card, Turkish word of the day, daily verse |
+| 💸 Expenses | Fixed costs (+ custom items) · expected log with category filters (day/week/month) · month-over-month comparison |
+| 🍽️ Food | Weekly groceries checklist (feeds "spent on groceries") · meal plan (breakfast/lunch/dinner) with recipes |
+| 🏋️ Workouts | Weekly schedule (today highlighted, commitment indicator, streak) · weight tracking with trend chart · motivational quotes |
+| 👔 Clothes | My wardrobe (owned items by category/condition, gender-aware) · shopping list (by priority; "bought it" moves it into the wardrobe) · suggested shops · monthly clothing budget |
+| 💊 Medicines | (opens from Settings) meds/vitamins with times + "taken today" checkbox + reminder notifications (PWA) |
+| 🏷️ Prices | Standalone price list with quick inline editing of every price |
+| 🕌 Prayer | "Your prayer, your life" — prayer times (Aladhan, Diyanet method) + countdown to the next prayer + morning/evening adhkar with daily-resetting counters |
+| ⚙️ Settings | Profile (name + photo), gender, theme (light/dark/auto), PIN + biometric lock, salary, exchange rate, clothing budget, price table, JSON export/import, reset for a new month, language |
 
 ---
 
-### الهوية البصرية — "Hot Virginia"
-ريديزاين فاخر: **زمردي عميق `#062D23` × ذهبي محترق `#C49418` × عاجي دافئ `#F8F4EA`** (لوبي فندق 5 نجوم).
-- تنقّل سفلي عائم (**Pill Island**) — كبسولة متمركزة، التبويب النشط حبّة ذهبية بأيقونة+نص.
-- كروت بحدّ ذهبي **سفلي** + ظلال دافئة، بطاقة هويّة فاخرة بتدرّج وحلقة ذهبية.
-- وضع فاتح/داكن بنفس الهوية، شريط تقدّم متدرّج بتوهّج، نوافذ Bottom-Sheet بمقبض سحب.
-- خط Tajawal، أرقام `tabular-nums`، RTL كامل.
+## Online features (keyless, offline-tolerant)
 
-### اللغات (i18n)
-ثلاث لغات: **English (افتراضي) · العربية · Türkçe** عبر i18next + react-i18next.
-- شاشة اختيار اللغة تظهر أول مرة (الخطوة 0 من الإعداد)، ويمكن تغييرها لاحقاً من الإعدادات.
-- التبديل فوري بدون إعادة تحميل وبدون فقدان بيانات. العربية = RTL + خط Tajawal · الإنجليزية/التركية = LTR + خط Inter.
-- العملة تبقى ₺ و $ في كل اللغات. التواريخ: M/D للإنجليزية، D/M للعربية والتركية.
-- ملفات الترجمة في `src/i18n/locales/{en,ar,tr}.json`. المحتوى المخزّن (وجبات، وصفات، مشتريات، أسعار…) يُترجَم وقت العرض عبر مفاتيح ثابتة في `src/i18n/content.ts` — بدون أي تغيير في البيانات أو المنطق.
+Three free, no-key public APIs are used — each is fetched once, cached locally, and falls back to the last saved value when offline:
 
-### إضافات المرحلة الأخيرة
-- **صفحة الأسعار** المستقلّة (من الإعدادات) مع تعديل سريع لكل سعر.
-- **الجنس** (ذكر/أنثى) في خطوة الإعداد + الإعدادات — يؤثّر على اقتراح اللبس.
-- **خزانة فاضية** افتراضياً — كل مستخدم يبني خزانته، واقتراح اللبس يصير من ملابسه الفعلية (وإلا زر «أضف ملابس»).
-- **سعر الصرف**: حالة واضحة (مرتفع/نازل/مستقر) + زر استخدمه/تحديث + مؤشّر تحميل.
-- **المترو GPS**: يحدّد أقرب محطة M2 تلقائياً (Haversine)، ومع رفض الموقع يرجع للاختيار اليدوي.
-- **عبارات تحفيزية** بالتمارين (يومية/أسبوعية/شهرية).
-- **آية اليوم** على الرئيسية (تتغيّر يومياً، مختلفة لكل جهاز).
-- **شاشة «صلاتك حياتك»**: مواقيت الصلاة (Aladhan – طريقة ديانت) + عدّاد للصلاة القادمة + أذكار الصباح والمساء بعدّادات تتصفّر يومياً.
-- **إشعارات مجدولة**: أذكار الصباح 5ص · أذكار المساء 5م · الجمعة (سورة الكهف) 8ص — مع مفاتيح تشغيل/إيقاف.
+- **Open-Meteo** — Istanbul weather (drives the outfit suggestion)
+- **Frankfurter** — daily ₺/$ exchange rate (with up/down/stable status)
+- **Aladhan** — prayer times (Diyanet method; needs location permission)
 
-> ⚠️ **محتوى ديني:** آيات القرآن والأذكار مكتوبة بعناية مع ذكر المرجع، لكن **راجِعها بنفسك قبل النشر**. مواقيت الصلاة تستخدم Aladhan API (مجاني، بدون مفتاح، يحتاج إذن الموقع).
+Everything else runs fully offline. Notifications work best after installing as a PWA.
 
-## التقنيات
+> ⚠️ **Religious content:** Qur'an verses and adhkar are written carefully with references, but **review them yourself before publishing.**
 
-React + Vite + TypeScript · Tailwind CSS · react-router-dom · Recharts · lucide-react · vite-plugin-pwa · خط Tajawal.
+---
+
+## Visual identity — "Hot Virginia"
+
+Deep emerald `#062D23` × burnt gold `#C49418` × warm ivory `#F8F4EA` (a five-star hotel lobby).
+
+- Floating bottom nav ("Pill Island") — centered capsule, active tab a gold pill with icon + label.
+- Cards with a **bottom** gold edge + warm shadows; a luxe gradient identity card with a gold ring.
+- Matching light/dark modes, glowing gradient progress bar, bottom-sheet modals with a drag handle.
+- Inter for Latin, Tajawal for Arabic; `tabular-nums`; full RTL.
+
+---
+
+## i18n
+
+- English (default) · Arabic · Turkish via i18next + react-i18next.
+- A language picker appears on first run (onboarding step 0) and can be changed later in Settings.
+- Switching is instant — no reload, no data loss. Arabic = RTL + Tajawal; English/Turkish = LTR + Inter.
+- Currency stays ₺ and $ in every language. Dates: M/D for English, D/M for Arabic & Turkish.
+- Translation files live in `src/i18n/locales/{en,ar,tr}.json`. Stored content (meals, recipes, groceries, prices…) is canonical and translated at render time via stable key-maps in `src/i18n/content.ts` — no data or logic is duplicated per language.
+
+---
+
+## Tech
+
+React + Vite + TypeScript · Tailwind CSS · react-router-dom · Recharts · lucide-react · vite-plugin-pwa.

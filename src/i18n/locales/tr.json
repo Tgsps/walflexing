@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "İstanbul'da Bekar",
+    "appName": "Walflex",
     "letsGo": "Hadi başlayalım",
     "back": "Geri",
     "next": "İleri",
@@ -416,7 +416,7 @@
     "resetAll": "Her şeyi sıfırla",
     "confirmResetAll": "Her şey varsayılana dönsün mü? Tüm düzenlemelerin silinir ve orijinal veriler geri gelir.",
     "resetAllDone": "Varsayılana dönüldü ✅",
-    "footer": "İstanbul'da Bekar · çevrimdışı çalışır 📲",
+    "footer": "Walflex · çevrimdışı çalışır 📲",
     "footerRemaining": "dolar cinsinden kalan"
   },
   "pin": {

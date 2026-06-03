@@ -13,9 +13,3 @@ shot-*.mjs
 
 # generated PWA artifacts
 dev-dist
-
-# generated icons (recreated by scripts/generate-icons.mjs on dev/build)
-public/pwa-192x192.png
-public/pwa-512x512.png
-public/maskable-512x512.png
-public/apple-touch-icon.png

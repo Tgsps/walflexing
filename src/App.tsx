@@ -5,6 +5,7 @@ import BottomNav from './components/BottomNav';
 import InstallHint from './components/InstallHint';
 import Onboarding from './components/Onboarding';
 import PinLock from './components/PinLock';
+import IntroSplash from './components/IntroSplash';
 import EndOfDayModal from './components/EndOfDayModal';
 import MedicineScheduler from './components/MedicineScheduler';
 import PrayerScheduler from './components/PrayerScheduler';
@@ -25,6 +26,9 @@ export default function App() {
   const { data } = useApp();
   const { onboardingDone, pinEnabled, pinHash } = data.settings;
   const lockable = pinEnabled && !!pinHash;
+
+  // intro video plays on every open (in-memory only → fresh each launch/refresh)
+  const [introPlayed, setIntroPlayed] = useState(false);
 
   const [locked, setLocked] = useState<boolean>(() => {
     if (!lockable) return false;
@@ -55,6 +59,7 @@ export default function App() {
     };
   }, [lockable]);
 
+  if (!introPlayed) return <IntroSplash onDone={() => setIntroPlayed(true)} />;
   if (!onboardingDone) return <Onboarding />;
   if (locked)
     return (

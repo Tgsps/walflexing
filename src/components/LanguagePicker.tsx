@@ -32,15 +32,7 @@ export default function LanguagePicker({ onConfirm }: { onConfirm: () => void })
       <div className="max-w-[480px] mx-auto px-6 py-10 safe-top min-h-full flex flex-col">
         {/* logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 rounded-[22px] shadow-card grid place-items-center mb-4" style={{ background: '#062D23' }}>
-            <svg width="48" height="48" viewBox="0 0 512 512" aria-hidden>
-              <path
-                d="M326 256c0 62-50 112-112 112-18 0-35-4-50-12 40 1 74-31 74-72s-34-73-74-72c15-8 32-12 50-12 62 0 112 50 112 56z"
-                fill="#C49418"
-              />
-              <circle cx="338" cy="196" r="20" fill="#C49418" />
-            </svg>
-          </div>
+          <img src="/logo.svg" alt="Walflex" className="w-24 h-24 rounded-[22px] shadow-card mb-4" />
           <div className="space-y-1 text-center">
             {LANGS.map((l) => (
               <div

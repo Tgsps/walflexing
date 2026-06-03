@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Bachelor in Istanbul",
+    "appName": "Walflex",
     "letsGo": "Let's go",
     "back": "Back",
     "next": "Next",
@@ -416,7 +416,7 @@
     "resetAll": "Reset everything",
     "confirmResetAll": "Reset everything to defaults? This wipes all your edits and restores the original data.",
     "resetAllDone": "Restored to defaults ✅",
-    "footer": "Bachelor in Istanbul · works offline 📲",
+    "footer": "Walflex · works offline 📲",
     "footerRemaining": "remaining in USD"
   },
   "pin": {

@@ -1,13 +1,10 @@
 {
-  "name": "bachelor-in-istanbul",
+  "name": "walflex",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "عازب في إسطنبول — تطبيق PWA لإدارة الراتب والمصاريف والأكل والتمارين",
+  "description": "Walflex — Your life. Your wallet. Your Istanbul.",
   "scripts": {
-    "icons": "node scripts/generate-icons.mjs",
-    "predev": "node scripts/generate-icons.mjs",
-    "prebuild": "node scripts/generate-icons.mjs",
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
