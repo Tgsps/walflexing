@@ -39,6 +39,7 @@
     "s2Sub": "Bütçeni hesaplayalım diye",
     "salaryUSD": "Aylık maaş (USD $)",
     "rate": "Döviz kuru (1$ kaç ₺)",
+    "rateAuto": "Döviz kuru otomatik güncellenir",
     "salaryInTRY": "Lira cinsinden maaşın",
     "s3Title": "Kira ve faturalar 🏠",
     "s3Sub": "Lira tutarı + ödeme günü (isteğe bağlı)",

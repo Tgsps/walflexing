@@ -25,7 +25,7 @@ import { LANGS, LANG_META } from '../i18n';
 import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
 import Modal from '../components/Modal';
-import { fmtTRY, fmtUSD, uid, todayISODate } from '../lib/format';
+import { fmtTRY, uid, todayISODate } from '../lib/format';
 import { isValidImport } from '../lib/storage';
 import { sha256 } from '../lib/crypto';
 import { biometricAvailable, hasBiometricCredential, registerBiometric, clearBiometric } from '../lib/biometric';
@@ -201,9 +201,6 @@ export default function Settings() {
 
       <p className="text-center text-xs text-muted font-bold mb-2">
         {t('settings.footer')}
-        <br />
-        <span className="num">{fmtUSD(data.settings.salaryUSD)}</span> ≈ <span className="num">{fmtTRY(salaryTRY)}</span> ·{' '}
-        <span className="num">{rate} ₺/$</span>
       </p>
     </div>
   );

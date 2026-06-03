@@ -39,6 +39,7 @@
     "s2Sub": "So we can work out your budget",
     "salaryUSD": "Monthly salary in USD ($)",
     "rate": "Exchange rate (₺ per $1)",
+    "rateAuto": "Exchange rate updates automatically",
     "salaryInTRY": "Your salary in lira",
     "s3Title": "Rent & bills 🏠",
     "s3Sub": "Amount in lira + due day (optional)",

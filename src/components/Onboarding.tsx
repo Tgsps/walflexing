@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Camera, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Camera, Check, Loader2 } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import { fmtTRY, uid } from '../lib/format';
+import { getRate } from '../lib/fx';
 import { fileToAvatar } from '../lib/image';
 import { tFixedName } from '../i18n/content';
 import type { Gender } from '../types';
@@ -19,11 +20,25 @@ export default function Onboarding() {
   const [name, setName] = useState(data.settings.userName || '');
   const [avatar, setAvatar] = useState<string | undefined>(data.settings.userAvatar);
   const [salary, setSalary] = useState(String(data.settings.salaryUSD || 1000));
-  const [rate, setRate] = useState(String(data.settings.exchangeRate || 45.8));
+  const [rate, setRate] = useState<number>(data.settings.exchangeRate || 45.8);
+  const [rateLoading, setRateLoading] = useState(true);
   const [bills, setBills] = useState(data.fixedExpenses.map((f) => ({ ...f })));
   const [hasGym, setHasGym] = useState(false);
   const [gymName, setGymName] = useState('');
   const [gymAmount, setGymAmount] = useState('');
+
+  // سعر الصرف يُجلب تلقائياً من API (Frankfurter) — fetch-once-cache-fallback، يرجع للافتراضي إن تعذّر
+  useEffect(() => {
+    let alive = true;
+    getRate().then((d) => {
+      if (!alive) return;
+      if (d?.rate) setRate(Math.round(d.rate * 100) / 100);
+      setRateLoading(false);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const finish = () => {
     update((d) => {
@@ -31,7 +46,7 @@ export default function Onboarding() {
       d.settings.userName = name.trim();
       d.settings.userAvatar = avatar;
       d.settings.salaryUSD = Number(salary) || 0;
-      d.settings.exchangeRate = Number(rate) || 45.8;
+      d.settings.exchangeRate = rate || 45.8;
       d.fixedExpenses = bills.map((b) => ({
         ...b,
         amountTRY: Number(b.amountTRY) || 0,
@@ -132,12 +147,17 @@ export default function Onboarding() {
               <Labeled label={t('onboarding.salaryUSD')}>
                 <input type="number" inputMode="decimal" value={salary} onChange={(e) => setSalary(e.target.value)} className="field num" />
               </Labeled>
-              <Labeled label={t('onboarding.rate')}>
-                <input type="number" inputMode="decimal" step="0.1" value={rate} onChange={(e) => setRate(e.target.value)} className="field num" />
-              </Labeled>
+              <div className="flex items-center justify-between mt-1 px-1 text-xs font-bold text-muted">
+                <span>💱 {t('onboarding.rateAuto')}</span>
+                {rateLoading ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <span className="num text-green">$1 = {rate.toFixed(2)} ₺</span>
+                )}
+              </div>
               <div className="bg-gold-soft rounded-xl px-3 py-2.5 flex items-center justify-between mt-2">
                 <span className="font-bold text-green">{t('onboarding.salaryInTRY')}</span>
-                <span className="font-black text-green num">{fmtTRY((Number(salary) || 0) * (Number(rate) || 0))}</span>
+                <span className="font-black text-green num">{fmtTRY((Number(salary) || 0) * rate)}</span>
               </div>
             </Step>
           )}
