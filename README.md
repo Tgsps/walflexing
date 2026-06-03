@@ -114,6 +114,31 @@ Deep emerald `#062D23` × burnt gold `#C49418` × warm ivory `#F8F4EA` (a five-s
 
 ---
 
+## Themes
+
+Seven color palettes, switchable instantly from **Settings → 🎨 Theme** (persisted in `settings.colorTheme`, default **Emerald**):
+
+| Theme | Mode | Feel |
+|---|---|---|
+| **Emerald** | light | the default "Hot Virginia" emerald × gold |
+| **Neon Night** | dark | violet + cyan neon on near-black, glowing cards |
+| **Campus** | light | navy + amber, clean and academic |
+| **Rose Gold** | light | wine rose + gold |
+| **Blossom Neon** | dark | hot-pink + purple neon, glowing cards |
+| **Minimal** | light | monochrome black/white + a gold accent |
+| **Clay** | light | warm terracotta + amber *(placeholder — see note)* |
+
+How it works:
+
+- Every color is an RGB-triple CSS variable; palettes are applied as `[data-theme="…"]` on `<html>` ([src/styles/themes.ts](src/styles/themes.ts), CSS in [src/index.css](src/index.css)). All components use semantic tokens (`bg-card`, `text-ink`, `bg-green`…), so they re-theme automatically — no hardcoded colors.
+- The existing **light/dark/auto** toggle still works and composes with themes: dark themes (Neon Night, Blossom) ignore it; light themes get a darkened variant when dark mode is on. *Theme choice overrides the dark-mode setting.*
+- A tiny inline script in [index.html](index.html) applies the saved theme before React mounts, so there's no flash of the default palette.
+- `ThemeContext` ([src/contexts/ThemeContext.tsx](src/contexts/ThemeContext.tsx)) exposes `useTheme()`; the picker is [src/components/ThemePicker.tsx](src/components/ThemePicker.tsx).
+
+> **Note on "Clay" (`design-1`):** this slot was meant to come from a Claude Design share link, but that link returned 404 (expired), so Clay is a tasteful placeholder. Provide a working design link and it can be swapped in.
+
+---
+
 ## i18n
 
 - English (default) · Arabic · Turkish via i18next + react-i18next.

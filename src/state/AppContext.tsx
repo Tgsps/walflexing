@@ -65,15 +65,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     applyLangDir(lang);
   }, [data.settings.language]);
 
-  // تطبيق الثيم (فاتح/داكن/تلقائي) + متابعة تغيّر النظام
+  // تطبيق الثيم (لوحة الألوان + فاتح/داكن/تلقائي) + متابعة تغيّر النظام
   useEffect(() => {
-    applyTheme(data.settings.theme);
-    if (data.settings.theme !== 'system') return;
+    const { colorTheme, theme } = data.settings;
+    applyTheme(colorTheme, theme);
+    if (theme !== 'system') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => applyTheme('system');
+    const handler = () => applyTheme(colorTheme, 'system');
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
-  }, [data.settings.theme]);
+  }, [data.settings.theme, data.settings.colorTheme]);
 
   const update = useCallback((mutator: (draft: AppData) => void) => {
     setData((prev) => {

@@ -1,6 +1,15 @@
 // ---- Data model -------------------------------------------------------------
 
 export type ThemeMode = 'light' | 'dark' | 'system';
+/** Color palette (separate from the light/dark ThemeMode). */
+export type ThemeId =
+  | 'emerald'
+  | 'neon-night'
+  | 'campus'
+  | 'rose-gold'
+  | 'blossom'
+  | 'minimal'
+  | 'design-1';
 export type Language = 'en' | 'ar' | 'tr';
 export type Gender = 'male' | 'female';
 
@@ -17,7 +26,8 @@ export interface Settings {
   pinHash?: string; // SHA-256
   pinEnabled: boolean;
   lastActiveAt?: string; // آخر نشاط (للقفل بعد 5 دقائق)
-  theme: ThemeMode;
+  theme: ThemeMode; // فاتح/داكن/تلقائي (مُعدِّل للثيمات الفاتحة)
+  colorTheme?: ThemeId; // لوحة الألوان (افتراضي emerald)
   metroStation?: string;
   lastRate?: number; // آخر سعر صرف مجلوب
   previousRate?: number;

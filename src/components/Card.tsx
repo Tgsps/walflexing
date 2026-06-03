@@ -31,7 +31,7 @@ export function StatCard({
         background: `rgb(${c} / 0.05)`,
         borderTop: `3px solid rgb(${c})`,
         padding: '16px 10px',
-        boxShadow: '0 2px 12px rgba(6,45,35,.06)',
+        boxShadow: '0 2px 12px rgb(var(--green) / .06)',
       }}
     >
       <div style={{ fontSize: 30, lineHeight: 1, marginBottom: 6 }} aria-hidden>

@@ -1,4 +1,13 @@
 {
+  "themes": {
+    "emerald": "الزمردي",
+    "neon-night": "نيون ليلي",
+    "campus": "جامعي",
+    "rose-gold": "ذهبي وردي",
+    "blossom": "بلوسوم",
+    "minimal": "أبيض نظيف",
+    "design-1": "طيني"
+  },
   "common": {
     "appName": "Walflex",
     "letsGo": "هيا",
@@ -372,6 +381,7 @@
     "themeLight": "فاتح",
     "themeDark": "داكن",
     "themeSystem": "تلقائي",
+    "themeColor": "🎨 الثيم",
     "security": "🔐 الأمان",
     "pinOn": "قفل الرمز مفعّل",
     "biometric": "فتح بالبصمة / الوجه",

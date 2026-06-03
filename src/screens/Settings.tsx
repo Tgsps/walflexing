@@ -25,6 +25,7 @@ import { LANGS, LANG_META } from '../i18n';
 import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
 import Modal from '../components/Modal';
+import ThemePicker from '../components/ThemePicker';
 import { fmtTRY, uid, todayISODate } from '../lib/format';
 import { isValidImport } from '../lib/storage';
 import { sha256 } from '../lib/crypto';
@@ -83,6 +84,7 @@ export default function Settings() {
       <ProfileCard />
       <LanguageCard />
       <ThemeCard />
+      <ThemePicker />
       <SecurityCard />
       <NotificationsCard />
 

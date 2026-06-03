@@ -26,6 +26,22 @@
     />
 
     <title>Walflex</title>
+
+    <!-- Apply the saved theme before paint to avoid a flash of the default palette -->
+    <script>
+      (function () {
+        try {
+          var s = (JSON.parse(localStorage.getItem('istanbul_app_v1') || '{}').settings) || {};
+          var ct = s.colorTheme || 'emerald';
+          var de = document.documentElement;
+          de.setAttribute('data-theme', ct);
+          var mode = s.theme || 'system';
+          var sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDarkTheme = ct === 'neon-night' || ct === 'blossom';
+          if (!isDarkTheme && (mode === 'dark' || (mode === 'system' && sysDark))) de.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

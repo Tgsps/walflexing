@@ -19,7 +19,7 @@ export default function IdentityCard() {
         borderRadius: 24,
         padding: 20,
         background: 'linear-gradient(135deg, rgb(var(--green-2)), rgb(var(--green)))',
-        boxShadow: '0 8px 28px rgba(6,45,35,.28)',
+        boxShadow: '0 8px 28px rgb(var(--green) / .28)',
       }}
     >
       <div
@@ -55,7 +55,7 @@ export default function IdentityCard() {
               fontSize: 22,
               background: 'rgba(255,255,255,.12)',
               border: '2px solid rgb(var(--gold))',
-              boxShadow: '0 0 16px rgba(196,148,24,.45)',
+              boxShadow: '0 0 16px rgb(var(--gold) / .45)',
             }}
           >
             {avatar ? <img src={avatar} alt="" className="w-full h-full object-cover" /> : name.charAt(0)}

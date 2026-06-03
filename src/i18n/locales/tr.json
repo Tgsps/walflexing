@@ -1,4 +1,13 @@
 {
+  "themes": {
+    "emerald": "Zümrüt",
+    "neon-night": "Neon Gece",
+    "campus": "Kampüs",
+    "rose-gold": "Gül Altın",
+    "blossom": "Çiçek Neon",
+    "minimal": "Minimal",
+    "design-1": "Kil"
+  },
   "common": {
     "appName": "Walflex",
     "letsGo": "Hadi başlayalım",
@@ -372,6 +381,7 @@
     "themeLight": "Açık",
     "themeDark": "Koyu",
     "themeSystem": "Otomatik",
+    "themeColor": "🎨 Tema",
     "security": "🔐 Güvenlik",
     "pinOn": "PIN kilidi açık",
     "biometric": "Face / Touch ID ile aç",

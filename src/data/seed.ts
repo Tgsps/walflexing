@@ -233,6 +233,7 @@ export function createSeedData(): AppData {
       userName: '',
       pinEnabled: false,
       theme: 'system',
+      colorTheme: 'emerald',
     },
     fixedExpenses: FIXED,
     variableExpenses: [],

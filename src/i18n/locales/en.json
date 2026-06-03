@@ -1,4 +1,13 @@
 {
+  "themes": {
+    "emerald": "Emerald",
+    "neon-night": "Neon Night",
+    "campus": "Campus",
+    "rose-gold": "Rose Gold",
+    "blossom": "Blossom Neon",
+    "minimal": "Minimal",
+    "design-1": "Clay"
+  },
   "common": {
     "appName": "Walflex",
     "letsGo": "Let's go",
@@ -372,6 +381,7 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeSystem": "Auto",
+    "themeColor": "🎨 Theme",
     "security": "🔐 Security",
     "pinOn": "PIN lock is on",
     "biometric": "Unlock with Face / Touch ID",
