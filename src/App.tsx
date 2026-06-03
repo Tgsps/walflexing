@@ -7,6 +7,7 @@ import Onboarding from './components/Onboarding';
 import PinLock from './components/PinLock';
 import EndOfDayModal from './components/EndOfDayModal';
 import MedicineScheduler from './components/MedicineScheduler';
+import PrayerScheduler from './components/PrayerScheduler';
 import Dashboard from './screens/Dashboard';
 import Expenses from './screens/Expenses';
 import Food from './screens/Food';
@@ -85,6 +86,7 @@ export default function App() {
       <InstallHint />
       <EndOfDayModal />
       <MedicineScheduler />
+      <PrayerScheduler />
     </div>
   );
 }

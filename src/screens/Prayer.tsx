@@ -5,7 +5,7 @@ import { ArrowLeft, MapPin, Check, Sun, Moon } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import Card from '../components/Card';
 import { todayISODate } from '../lib/format';
-import { fetchPrayerTimes, nextPrayer, fmtCountdown, PRAYER_ORDER, PRAYER_KEY } from '../lib/prayer';
+import { fetchPrayerTimes, nextPrayer, fmtCountdown, PRAYER_ORDER } from '../lib/prayer';
 import { MORNING_ADHKAR, EVENING_ADHKAR } from '../data/adhkar';
 import type { PrayerTimings } from '../types';
 
@@ -99,7 +99,7 @@ export default function Prayer() {
                     key={p}
                     className={`rounded-xl p-2.5 text-center border-2 ${isNext ? 'border-gold bg-gold/10' : 'border-line bg-cream/50'}`}
                   >
-                    <div className="text-xs font-bold text-muted">{t(`prayerNames.${PRAYER_KEY[p]}`)}</div>
+                    <div className="text-xs font-bold text-muted">{t(`prayerNames.${p}`)}</div>
                     <div className="num font-black text-green">{timings[p]}</div>
                   </div>
                 );

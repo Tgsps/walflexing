@@ -29,7 +29,8 @@ import { fmtTRY, fmtUSD, uid, todayISODate } from '../lib/format';
 import { isValidImport } from '../lib/storage';
 import { sha256 } from '../lib/crypto';
 import { biometricAvailable, hasBiometricCredential, registerBiometric, clearBiometric } from '../lib/biometric';
-import { tPriceName, tPriceUnit } from '../i18n/content';
+import { isStandalone, notificationsSupported, notificationPermission, requestNotificationPermission } from '../lib/notifications';
+import { Bell, AlertTriangle as Warn } from 'lucide-react';
 import type { AppData, ThemeMode } from '../types';
 
 export default function Settings() {
@@ -83,6 +84,7 @@ export default function Settings() {
       <LanguageCard />
       <ThemeCard />
       <SecurityCard />
+      <NotificationsCard />
 
       {/* salary & rate */}
       <Card className="mb-3">
@@ -318,6 +320,67 @@ function ThemeCard() {
           >
             <Icon size={20} />
             <span className="text-sm">{label}</span>
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------- notifications
+function NotificationsCard() {
+  const { t } = useTranslation();
+  const { data, update } = useApp();
+  const [perm, setPerm] = useState<NotificationPermission>(notificationPermission());
+  if (!notificationsSupported()) return null;
+
+  const standalone = isStandalone();
+  const rows: { key: 'notifyMorning' | 'notifyEvening' | 'notifyFriday'; label: string }[] = [
+    { key: 'notifyMorning', label: t('notifSettings.morning') },
+    { key: 'notifyEvening', label: t('notifSettings.evening') },
+    { key: 'notifyFriday', label: t('notifSettings.friday') },
+  ];
+
+  return (
+    <Card className="mb-3">
+      <h2 className="font-black text-green mb-3 flex items-center gap-2">
+        <Bell size={18} className="text-gold" /> {t('notifSettings.title')}
+      </h2>
+
+      {perm !== 'granted' && (
+        <div className="mb-3">
+          {!standalone && (
+            <div className="flex items-start gap-2 bg-warn/10 border border-warn/40 rounded-xl p-2.5 mb-2">
+              <Warn size={16} className="text-warn shrink-0 mt-0.5" />
+              <p className="text-xs font-bold text-[#9a7400]">{t('medicines.pwaWarn')}</p>
+            </div>
+          )}
+          <button
+            onClick={async () => setPerm(await requestNotificationPermission())}
+            className="btn-primary w-full flex items-center justify-center gap-2"
+          >
+            <Bell size={18} /> {perm === 'denied' ? t('medicines.denied') : t('medicines.allow')}
+          </button>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {rows.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => update((d) => { d.prayer[key] = !d.prayer[key]; })}
+            className={`w-full flex items-center justify-between rounded-xl border-2 px-3 py-2.5 font-bold text-sm transition ${
+              data.prayer[key] ? 'bg-green text-white border-green' : 'border-line text-muted'
+            }`}
+          >
+            <span className="text-start">{label}</span>
+            <span
+              className={`w-10 h-6 rounded-full relative shrink-0 transition ${data.prayer[key] ? 'bg-gold' : 'bg-line'}`}
+            >
+              <span
+                className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all ${data.prayer[key] ? 'left-0.5' : 'left-[18px]'}`}
+              />
+            </span>
           </button>
         ))}
       </div>
