@@ -1,3 +1,4 @@
+import { get, set, del } from 'idb-keyval';
 import type { AppData } from '../types';
 import { createSeedData, DATA_VERSION } from '../data/seed';
 
@@ -32,27 +33,38 @@ function ensureShape(stored: Partial<AppData> | null): AppData {
   };
 }
 
-export function loadData(): AppData {
+export async function loadData(): Promise<AppData> {
   try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return createSeedData();
-    return ensureShape(JSON.parse(raw));
+    let raw = await get<Partial<AppData>>(KEY);
+    if (raw) return ensureShape(raw);
+
+    const localRaw = localStorage.getItem(KEY);
+    if (localRaw) {
+      const parsed = JSON.parse(localRaw);
+      const shaped = ensureShape(parsed);
+      await set(KEY, shaped);
+      return shaped;
+    }
+
+    return createSeedData();
   } catch (err) {
     console.warn('فشل قراءة البيانات المحفوظة، سيتم استخدام البيانات الأولية.', err);
     return createSeedData();
   }
 }
 
-export function saveData(data: AppData): void {
+export async function saveData(data: AppData): Promise<void> {
   try {
-    localStorage.setItem(KEY, JSON.stringify(data));
+    await set(KEY, data);
+    localStorage.removeItem(KEY);
   } catch (err) {
     console.error('فشل حفظ البيانات محلياً.', err);
   }
 }
 
-export function clearData(): void {
+export async function clearData(): Promise<void> {
   try {
+    await del(KEY);
     localStorage.removeItem(KEY);
   } catch {
     /* ignore */

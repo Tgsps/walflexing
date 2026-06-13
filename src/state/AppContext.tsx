@@ -46,27 +46,37 @@ function deepClone<T>(obj: T): T {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AppData>(() => loadData());
+  const [data, setData] = useState<AppData | null>(null);
   const firstRender = useRef(true);
 
-  // حفظ تلقائي عند أي تغيير
   useEffect(() => {
+    loadData().then((d) => setData(d));
+  }, []);
+
+  // حفظ تلقائي عند أي تغيير (Debounced)
+  useEffect(() => {
+    if (!data) return;
     if (firstRender.current) {
       firstRender.current = false;
       return;
     }
-    saveData(data);
+    const timer = setTimeout(() => {
+      saveData(data);
+    }, 500);
+    return () => clearTimeout(timer);
   }, [data]);
 
   // تطبيق اللغة + الاتجاه (RTL/LTR) فوراً عند التغيير
   useEffect(() => {
+    if (!data) return;
     const lang = data.settings.language;
     if (i18n.language !== lang) i18n.changeLanguage(lang);
     applyLangDir(lang);
-  }, [data.settings.language]);
+  }, [data?.settings.language]);
 
   // تطبيق الثيم (لوحة الألوان + فاتح/داكن/تلقائي) + متابعة تغيّر النظام
   useEffect(() => {
+    if (!data) return;
     const { colorTheme, theme } = data.settings;
     applyTheme(colorTheme, theme);
     if (theme !== 'system') return;
@@ -74,10 +84,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const handler = () => applyTheme(colorTheme, 'system');
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
-  }, [data.settings.theme, data.settings.colorTheme]);
+  }, [data?.settings.theme, data?.settings.colorTheme]);
 
   const update = useCallback((mutator: (draft: AppData) => void) => {
     setData((prev) => {
+      if (!prev) return prev;
       const draft = deepClone(prev);
       mutator(draft);
       return draft;
@@ -88,6 +99,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const snapshotMonth = useCallback(() => {
     setData((prev) => {
+      if (!prev) return prev;
       const draft = deepClone(prev);
       upsertSnapshot(draft);
       return draft;
@@ -96,6 +108,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const resetForNewMonth = useCallback(() => {
     setData((prev) => {
+      if (!prev) return prev;
       const draft = deepClone(prev);
       upsertSnapshot(draft); // صوّر الشهر قبل التصفير
       draft.variableExpenses = [];
@@ -113,10 +126,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const resetAll = useCallback(() => setData(createSeedData()), []);
 
-  const value = useMemo<AppContextValue>(
-    () => ({ data, update, replace, resetForNewMonth, snapshotMonth, resetAll }),
-    [data, update, replace, resetForNewMonth, snapshotMonth, resetAll],
-  );
+  const value = useMemo<AppContextValue | null>(() => {
+    if (!data) return null;
+    return { data, update, replace, resetForNewMonth, snapshotMonth, resetAll };
+  }, [data, update, replace, resetForNewMonth, snapshotMonth, resetAll]);
+
+  if (!data || !value) {
+    return <div className="fixed inset-0 bg-cream" />;
+  }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
