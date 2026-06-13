@@ -30,6 +30,7 @@ function ensureShape(stored: Partial<AppData> | null): AppData {
     monthlyHistory: stored.monthlyHistory ?? seed.monthlyHistory,
     medicines: stored.medicines ?? seed.medicines,
     prayer: { ...seed.prayer, ...stored.prayer },
+    receipts: stored.receipts ?? seed.receipts,
   };
 }
 

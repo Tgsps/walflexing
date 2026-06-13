@@ -125,6 +125,25 @@ export interface Recipe {
   tip: string;
 }
 
+export interface ReceiptItem {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface ReceiptData {
+  id: string;
+  scannedAt: number;
+  storeName: string;
+  date?: string;
+  category?: string;
+  currency?: string;
+  items: ReceiptItem[];
+  tax?: number;
+  total?: number;
+  summary: string;
+}
+
 // ---- المرحلة الثانية -------------------------------------------------------
 
 export type WardrobeCategory = 'قمصان' | 'بنطلونات' | 'طبقات' | 'أحذية' | 'إكسسوار';
@@ -217,4 +236,5 @@ export interface AppData {
   monthlyHistory: MonthlySnapshot[];
   medicines: Medicine[];
   prayer: PrayerData;
+  receipts: ReceiptData[];
 }

@@ -18,6 +18,7 @@ import Medicines from './screens/Medicines';
 import Prices from './screens/Prices';
 import Prayer from './screens/Prayer';
 import Settings from './screens/Settings';
+import ReceiptScanner from './screens/ReceiptScanner';
 
 const LOCK_MS = 5 * 60 * 1000;
 const LAST_ACTIVE = 'last_active_at';
@@ -27,8 +28,8 @@ export default function App() {
   const { onboardingDone, pinEnabled, pinHash } = data.settings;
   const lockable = pinEnabled && !!pinHash;
 
-  // intro video plays on every open (in-memory only → fresh each launch/refresh)
-  const [introPlayed, setIntroPlayed] = useState(false);
+  // intro video disabled by user request
+  const [introPlayed, setIntroPlayed] = useState(true);
 
   const [locked, setLocked] = useState<boolean>(() => {
     if (!lockable) return false;
@@ -84,6 +85,7 @@ export default function App() {
           <Route path="/prices" element={<Prices />} />
           <Route path="/prayer" element={<Prayer />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/scanner" element={<ReceiptScanner />} />
           <Route path="*" element={<Dashboard />} />
         </Routes>
       </main>

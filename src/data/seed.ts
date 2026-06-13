@@ -251,6 +251,7 @@ export function createSeedData(): AppData {
       { id: 'm_omega', name: 'أوميغا 3', emoji: '🐟', time: '14:00', enabled: true },
     ],
     prayer: freshPrayer(),
+    receipts: [],
   };
 }
 

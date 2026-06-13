@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, Calendar, Camera, ArrowDown, ArrowUp, Minus } from 'lucide-react';
 import { useApp } from '../state/AppContext';
@@ -30,6 +31,12 @@ export default function Expenses() {
         <TabBtn active={tab === 'compare'} onClick={() => setTab('compare')}>
           {t('expenses.tabCompare')}
         </TabBtn>
+      </div>
+
+      <div className="mb-4">
+        <Link to="/scanner" className="btn-ghost w-full flex items-center justify-center gap-2 bg-green/10 text-green border-green/20">
+          <Camera size={18} /> مسح الفواتير بالذكاء الاصطناعي
+        </Link>
       </div>
 
       {tab === 'fixed' && <FixedTab />}
