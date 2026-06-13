@@ -1,7 +1,7 @@
 import type { ReceiptData } from '../types';
 
 export async function parseReceiptImage(base64Image: string): Promise<Omit<ReceiptData, 'id' | 'scannedAt'>> {
-  const response = await fetch('/.netlify/functions/parse-receipt', {
+  const response = await fetch('/api/parse-receipt', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ imageBase64: base64Image }),
