@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, Download, Trash2, Receipt } from 'lucide-react';
+import { Camera, Download, Trash2, Receipt, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
@@ -7,13 +7,24 @@ import { useApp } from '../state/AppContext';
 import { compressImage } from '../lib/image';
 import { parseReceiptImage } from '../lib/gemini';
 import { uid } from '../lib/format';
-import type { ReceiptData } from '../types';
+import type { ReceiptData, VariableCategory } from '../types';
+
+const CATEGORY_MAP: Record<string, VariableCategory> = {
+  'Food/Restaurants': 'readyFood',
+  'Shopping': 'shopping',
+  'Entertainment': 'entertainment',
+  'Supplies': 'shopping',
+  'Clothing': 'shopping',
+  'Home Bills': 'unexpected',
+  'Other': 'unexpected',
+};
 
 export default function ReceiptScanner() {
   const { t } = useTranslation();
   const { data, update } = useApp();
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [addedExpense, setAddedExpense] = useState<string | null>(null);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,9 +42,24 @@ export default function ReceiptScanner() {
         scannedAt: Date.now(),
       };
 
+      const category = CATEGORY_MAP[result.category || ''] ?? 'unexpected';
+      const rate = data.settings.exchangeRate;
+      let amountTRY = result.total ?? 0;
+      if (result.currency === 'USD') amountTRY = amountTRY * rate;
+
       update((d) => {
         d.receipts = [newReceipt, ...d.receipts];
+        d.variableExpenses.unshift({
+          id: uid('e'),
+          category,
+          amountTRY,
+          date: new Date().toISOString(),
+          note: result.storeName,
+        });
       });
+
+      setAddedExpense(category);
+      setTimeout(() => setAddedExpense(null), 3000);
 
     } catch (err: any) {
       console.error(err);
@@ -80,6 +106,12 @@ export default function ReceiptScanner() {
           <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleImageUpload} disabled={isScanning} />
         </label>
         {error && <div className="text-sm font-bold text-danger mt-3 text-center bg-danger/10 p-2 rounded-xl border border-danger/30">{error}</div>}
+        {addedExpense && (
+          <div className="flex items-center gap-2 mt-3 bg-green/10 border border-green/30 rounded-xl px-3 py-2.5 animate-pop">
+            <CheckCircle2 size={16} className="text-green shrink-0" />
+            <span className="text-sm font-bold text-green">Added to expenses as <span className="capitalize">{addedExpense}</span></span>
+          </div>
+        )}
       </Card>
 
       {receipts.length > 0 && (
