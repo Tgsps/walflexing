@@ -69,7 +69,7 @@ export default async function handler(req: any, res: any) {
       }
     });
 
-    const text = response.text ? response.text() : '';
+    const text = response.text ?? '';
     if (!text) {
       throw new Error('Empty response from GenAI');
     }
