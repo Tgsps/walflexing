@@ -170,6 +170,8 @@ export interface WishlistItem {
   budgetMinTRY: number;
   budgetMaxTRY: number;
   bought: boolean;
+  size?: string;
+  image?: string; // base64 generated product image
 }
 
 export interface Wardrobe {

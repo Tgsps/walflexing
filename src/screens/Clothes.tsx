@@ -336,6 +336,49 @@ function WishlistTab() {
   const { data, update } = useApp();
   const [adding, setAdding] = useState(false);
   const [buying, setBuying] = useState<WishlistItem | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [scanSuccess, setScanSuccess] = useState<string | null>(null);
+  const scanRef = useRef<HTMLInputElement>(null);
+
+  const handleScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setScanError(null);
+    setScanSuccess(null);
+    setScanning(true);
+    try {
+      const base64Image = await compressImage(file, 800, 0.75);
+      const res = await fetch('/api/analyze-wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64Image }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Failed');
+      const result = await res.json();
+      const price = result.priceTRY ?? 0;
+      update((d) => {
+        d.wardrobe.wishlist.push({
+          id: uid('wl'),
+          name: result.name ?? '',
+          priority: 'medium',
+          store: result.brand ?? '—',
+          budgetMinTRY: price,
+          budgetMaxTRY: price,
+          bought: false,
+          size: result.size ?? undefined,
+          image: result.generatedImage ?? undefined,
+        } as WishlistItem);
+      });
+      setScanSuccess(`${result.name}${result.size ? ' · ' + result.size : ''}${price ? ' · ' + fmtTRY(price) : ''}`);
+      setTimeout(() => setScanSuccess(null), 4000);
+    } catch (err: any) {
+      setScanError(err.message || 'Could not analyze the photo');
+    } finally {
+      setScanning(false);
+    }
+  };
 
   const sorted = useMemo(
     () => data.wardrobe.wishlist.slice().sort((a, b) => Number(a.bought) - Number(b.bought) || PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]),
@@ -346,35 +389,38 @@ function WishlistTab() {
     <div>
       <ul className="space-y-2 mb-3">
         {sorted.map((item) => (
-          <li key={item.id} className={`rounded-2xl border p-3 ${item.bought ? 'bg-cream/60 border-line opacity-70' : 'bg-card border-line'}`}>
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <span className={`font-bold ${item.bought ? 'line-through text-muted' : 'text-ink'}`}>{tWishName(item.id, t, item.name)}</span>
-              <span className={`chip shrink-0 text-xs ${PRIORITY_STYLE[item.priority]}`}>{t(`priority.${item.priority}`)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="text-xs text-muted font-bold">
-                <Store size={12} className="inline mx-1" />
-                {item.store} ·{' '}
-                <span className="num">
-                  {fmtTRY(item.budgetMinTRY)}–{fmtTRY(item.budgetMaxTRY)}
-                </span>
+          <li key={item.id} className={`rounded-2xl border p-3 flex gap-3 ${item.bought ? 'bg-cream/60 border-line opacity-70' : 'bg-card border-line'}`}>
+            {item.image ? (
+              <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0 border border-line bg-white self-center" />
+            ) : (
+              <div className="w-16 h-16 rounded-xl shrink-0 border border-line bg-cream/60 grid place-items-center text-2xl self-center">
+                🛍️
               </div>
-              <div className="flex items-center gap-1 shrink-0">
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <span className={`font-bold leading-tight ${item.bought ? 'line-through text-muted' : 'text-ink'}`}>{tWishName(item.id, t, item.name)}</span>
+                <span className={`chip shrink-0 text-xs ${PRIORITY_STYLE[item.priority]}`}>{t(`priority.${item.priority}`)}</span>
+              </div>
+              <div className="text-xs text-muted font-bold mb-2">
+                <Store size={12} className="inline mx-1" />
+                {item.store}
+                {item.size ? ` · ${item.size}` : ''}
+                {' · '}
+                <span className="num">{fmtTRY(item.budgetMinTRY)}{item.budgetMaxTRY !== item.budgetMinTRY ? `–${fmtTRY(item.budgetMaxTRY)}` : ''}</span>
+              </div>
+              <div className="flex items-center gap-1">
                 {!item.bought && (
-                  <button onClick={() => setBuying(item)} className="bg-green text-white rounded-lg px-3 py-1.5 text-sm font-bold active:scale-95 flex items-center gap-1">
-                    <Check size={14} strokeWidth={3} /> {t('clothes.boughtIt')}
+                  <button onClick={() => setBuying(item)} className="bg-green text-white rounded-lg px-3 py-1.5 text-xs font-bold active:scale-95 flex items-center gap-1">
+                    <Check size={13} strokeWidth={3} /> {t('clothes.boughtIt')}
                   </button>
                 )}
                 <button
-                  onClick={() =>
-                    update((d) => {
-                      d.wardrobe.wishlist = d.wardrobe.wishlist.filter((x) => x.id !== item.id);
-                    })
-                  }
-                  className="w-8 h-8 grid place-items-center rounded-lg text-danger active:scale-95"
+                  onClick={() => update((d) => { d.wardrobe.wishlist = d.wardrobe.wishlist.filter((x) => x.id !== item.id); })}
+                  className="w-7 h-7 grid place-items-center rounded-lg text-danger active:scale-95"
                   aria-label={t('common.delete')}
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={15} />
                 </button>
               </div>
             </div>
@@ -384,9 +430,37 @@ function WishlistTab() {
 
       {data.wardrobe.wishlist.length === 0 && <p className="text-center text-sm text-muted font-bold py-6">{t('clothes.emptyWishlist')}</p>}
 
-      <button onClick={() => setAdding(true)} className="btn-ghost w-full flex items-center justify-center gap-2">
-        <Plus size={18} /> {t('clothes.addToList')}
-      </button>
+      {scanError && (
+        <p className="text-sm font-bold text-danger text-center bg-danger/10 border border-danger/30 rounded-xl px-3 py-2 mb-2 animate-pop">
+          {scanError}
+        </p>
+      )}
+      {scanSuccess && (
+        <p className="text-sm font-bold text-green text-center bg-green/10 border border-green/30 rounded-xl px-3 py-2 mb-2 animate-pop">
+          ✓ {scanSuccess}
+        </p>
+      )}
+      {scanning && (
+        <div className="flex flex-col items-center gap-2 py-3 animate-pop">
+          <Loader2 size={26} className="animate-spin text-gold" />
+          <p className="text-sm font-bold text-muted">Reading price tag…</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          onClick={() => scanRef.current?.click()}
+          disabled={scanning}
+          className="btn-primary flex items-center justify-center gap-2"
+        >
+          <Camera size={18} /> Scan in Store
+        </button>
+        <button onClick={() => setAdding(true)} className="btn-ghost flex items-center justify-center gap-2">
+          <Plus size={18} /> {t('clothes.addToList')}
+        </button>
+      </div>
+
+      <input ref={scanRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleScan} />
 
       {adding && <AddWishlistModal onClose={() => setAdding(false)} />}
       {buying && <BuyModal item={buying} onClose={() => setBuying(null)} />}
