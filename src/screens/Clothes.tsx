@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2, ShoppingBag, Check, Store, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, ShoppingBag, Check, Store, ChevronDown, Camera, Loader2 } from 'lucide-react';
 import { useApp } from '../state/AppContext';
 import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
@@ -8,8 +8,17 @@ import Modal from '../components/Modal';
 import { WARDROBE_STORES } from '../data/seed';
 import { clothingThisMonth } from '../lib/calc';
 import { fmtTRY, fmtUSD, toUSD, uid } from '../lib/format';
+import { compressImage } from '../lib/image';
 import { tWardrobeCat, tColor, tOwnedName, tWishName, tStoreSpec } from '../i18n/content';
 import type { OwnedItem, Priority, WardrobeCategory, WishlistItem } from '../types';
+
+const TYPE_TO_CAT: Record<string, WardrobeCategory> = {
+  top: 'قمصان',
+  bottom: 'بنطلونات',
+  layer: 'طبقات',
+  shoes: 'أحذية',
+  accessory: 'إكسسوار',
+};
 
 type Tab = 'owned' | 'wishlist';
 
@@ -106,11 +115,49 @@ function CatSelect({ value, onChange }: { value: WardrobeCategory; onChange: (c:
 }
 
 // ---------------------------------------------------------------- wardrobe
+interface ScanResult {
+  name: string;
+  category: WardrobeCategory;
+  color: string;
+}
+
 function OwnedTab() {
   const { t } = useTranslation();
   const { data, update } = useApp();
   const rate = data.settings.exchangeRate;
   const [adding, setAdding] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [prefill, setPrefill] = useState<ScanResult | null>(null);
+  const scanRef = useRef<HTMLInputElement>(null);
+
+  const handleScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setScanError(null);
+    setScanning(true);
+    try {
+      const base64Image = await compressImage(file, 800, 0.75);
+      const res = await fetch('/api/analyze-clothing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64Image }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Failed');
+      const data = await res.json();
+      setPrefill({
+        name: data.name ?? '',
+        category: TYPE_TO_CAT[data.type] ?? 'قمصان',
+        color: data.color ?? '',
+      });
+      setAdding(true);
+    } catch (err: any) {
+      setScanError(err.message || 'Could not analyze the photo');
+    } finally {
+      setScanning(false);
+    }
+  };
 
   const cycleStatus = (id: string) =>
     update((d) => {
@@ -168,21 +215,66 @@ function OwnedTab() {
 
       {data.wardrobe.owned.length === 0 && <p className="text-center text-sm text-muted font-bold py-6">{t('clothes.emptyWardrobe')}</p>}
 
-      <button onClick={() => setAdding(true)} className="btn-ghost w-full flex items-center justify-center gap-2">
-        <Plus size={18} /> {t('clothes.addPiece')}
-      </button>
+      {scanError && (
+        <p className="text-sm font-bold text-danger text-center bg-danger/10 border border-danger/30 rounded-xl px-3 py-2 mb-2">
+          {scanError}
+        </p>
+      )}
 
-      {adding && <AddOwnedModal rate={rate} onClose={() => setAdding(false)} />}
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          onClick={() => scanRef.current?.click()}
+          disabled={scanning}
+          className="btn-primary flex items-center justify-center gap-2"
+        >
+          {scanning ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
+          {scanning ? t('common.loading', 'Analyzing…') : t('clothes.scanItem', 'Scan Item')}
+        </button>
+        <button onClick={() => { setPrefill(null); setAdding(true); }} className="btn-ghost flex items-center justify-center gap-2">
+          <Plus size={18} /> {t('clothes.addPiece')}
+        </button>
+      </div>
+
+      <input
+        ref={scanRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleScan}
+      />
+
+      {adding && (
+        <AddOwnedModal
+          rate={rate}
+          initialName={prefill?.name}
+          initialCategory={prefill?.category}
+          initialColor={prefill?.color}
+          onClose={() => { setAdding(false); setPrefill(null); }}
+        />
+      )}
     </div>
   );
 }
 
-function AddOwnedModal({ rate, onClose }: { rate: number; onClose: () => void }) {
+function AddOwnedModal({
+  rate,
+  onClose,
+  initialName = '',
+  initialCategory = 'قمصان',
+  initialColor = '',
+}: {
+  rate: number;
+  onClose: () => void;
+  initialName?: string;
+  initialCategory?: WardrobeCategory;
+  initialColor?: string;
+}) {
   const { t } = useTranslation();
   const { update } = useApp();
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState<WardrobeCategory>('قمصان');
-  const [color, setColor] = useState('');
+  const [name, setName] = useState(initialName);
+  const [category, setCategory] = useState<WardrobeCategory>(initialCategory);
+  const [color, setColor] = useState(initialColor);
   const [store, setStore] = useState('');
   const [price, setPrice] = useState('');
 
