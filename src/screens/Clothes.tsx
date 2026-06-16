@@ -115,12 +115,6 @@ function CatSelect({ value, onChange }: { value: WardrobeCategory; onChange: (c:
 }
 
 // ---------------------------------------------------------------- wardrobe
-interface ScanResult {
-  name: string;
-  category: WardrobeCategory;
-  color: string;
-}
-
 function OwnedTab() {
   const { t } = useTranslation();
   const { data, update } = useApp();
@@ -128,7 +122,7 @@ function OwnedTab() {
   const [adding, setAdding] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
-  const [prefill, setPrefill] = useState<ScanResult | null>(null);
+  const [scanSuccess, setScanSuccess] = useState<string | null>(null);
   const scanRef = useRef<HTMLInputElement>(null);
 
   const handleScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,6 +130,7 @@ function OwnedTab() {
     if (!file) return;
     e.target.value = '';
     setScanError(null);
+    setScanSuccess(null);
     setScanning(true);
     try {
       const base64Image = await compressImage(file, 800, 0.75);
@@ -145,13 +140,18 @@ function OwnedTab() {
         body: JSON.stringify({ imageBase64: base64Image }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Failed');
-      const data = await res.json();
-      setPrefill({
-        name: data.name ?? '',
-        category: TYPE_TO_CAT[data.type] ?? 'قمصان',
-        color: data.color ?? '',
-      });
-      setAdding(true);
+      const result = await res.json();
+      const newItem: OwnedItem = {
+        id: uid('w'),
+        name: result.name ?? '',
+        category: TYPE_TO_CAT[result.type] ?? 'قمصان',
+        color: result.color ?? '—',
+        status: 'owned',
+        image: result.generatedImage ?? undefined,
+      };
+      update((d) => { d.wardrobe.owned.push(newItem); });
+      setScanSuccess(`${result.name} · ${result.color}`);
+      setTimeout(() => setScanSuccess(null), 4000);
     } catch (err: any) {
       setScanError(err.message || 'Could not analyze the photo');
     } finally {
@@ -179,6 +179,13 @@ function OwnedTab() {
             <ul className="space-y-2">
               {items.map((o) => (
                 <li key={o.id} className={`rounded-2xl border p-3 flex items-center gap-3 ${o.status === 'owned' ? 'bg-card border-line' : 'bg-cream/60 border-line opacity-70'}`}>
+                  {o.image ? (
+                    <img src={o.image} alt={o.name} className="w-14 h-14 rounded-xl object-cover shrink-0 border border-line bg-white" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-xl shrink-0 border border-line bg-cream/60 grid place-items-center text-2xl">
+                      {CAT_EMOJI[o.category]}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="font-bold text-ink truncate">{tOwnedName(o.id, t, o.name)}</div>
                     <div className="text-xs text-muted font-bold">
@@ -216,9 +223,21 @@ function OwnedTab() {
       {data.wardrobe.owned.length === 0 && <p className="text-center text-sm text-muted font-bold py-6">{t('clothes.emptyWardrobe')}</p>}
 
       {scanError && (
-        <p className="text-sm font-bold text-danger text-center bg-danger/10 border border-danger/30 rounded-xl px-3 py-2 mb-2">
+        <p className="text-sm font-bold text-danger text-center bg-danger/10 border border-danger/30 rounded-xl px-3 py-2 mb-2 animate-pop">
           {scanError}
         </p>
+      )}
+      {scanSuccess && (
+        <p className="text-sm font-bold text-green text-center bg-green/10 border border-green/30 rounded-xl px-3 py-2 mb-2 animate-pop">
+          ✓ {scanSuccess}
+        </p>
+      )}
+
+      {scanning && (
+        <div className="flex flex-col items-center gap-2 py-4 animate-pop">
+          <Loader2 size={28} className="animate-spin text-gold" />
+          <p className="text-sm font-bold text-muted">Analyzing &amp; generating image…</p>
+        </div>
       )}
 
       <div className="grid grid-cols-2 gap-2">
@@ -227,10 +246,10 @@ function OwnedTab() {
           disabled={scanning}
           className="btn-primary flex items-center justify-center gap-2"
         >
-          {scanning ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
-          {scanning ? t('common.loading', 'Analyzing…') : t('clothes.scanItem', 'Scan Item')}
+          <Camera size={18} />
+          {t('clothes.scanItem', 'Scan Item')}
         </button>
-        <button onClick={() => { setPrefill(null); setAdding(true); }} className="btn-ghost flex items-center justify-center gap-2">
+        <button onClick={() => setAdding(true)} className="btn-ghost flex items-center justify-center gap-2">
           <Plus size={18} /> {t('clothes.addPiece')}
         </button>
       </div>
@@ -247,34 +266,19 @@ function OwnedTab() {
       {adding && (
         <AddOwnedModal
           rate={rate}
-          initialName={prefill?.name}
-          initialCategory={prefill?.category}
-          initialColor={prefill?.color}
-          onClose={() => { setAdding(false); setPrefill(null); }}
+          onClose={() => setAdding(false)}
         />
       )}
     </div>
   );
 }
 
-function AddOwnedModal({
-  rate,
-  onClose,
-  initialName = '',
-  initialCategory = 'قمصان',
-  initialColor = '',
-}: {
-  rate: number;
-  onClose: () => void;
-  initialName?: string;
-  initialCategory?: WardrobeCategory;
-  initialColor?: string;
-}) {
+function AddOwnedModal({ rate, onClose }: { rate: number; onClose: () => void }) {
   const { t } = useTranslation();
   const { update } = useApp();
-  const [name, setName] = useState(initialName);
-  const [category, setCategory] = useState<WardrobeCategory>(initialCategory);
-  const [color, setColor] = useState(initialColor);
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState<WardrobeCategory>('قمصان');
+  const [color, setColor] = useState('');
   const [store, setStore] = useState('');
   const [price, setPrice] = useState('');
 

@@ -159,6 +159,7 @@ export interface OwnedItem {
   pricePaid?: number;
   purchaseDate?: string; // ISO — يُحتسب ضمن مصاريف الشهر
   status: WardrobeStatus;
+  image?: string; // base64 generated product image
 }
 
 export interface WishlistItem {
